@@ -1,3 +1,4 @@
+open Token
 open Language
 open Ast
 
@@ -6,18 +7,17 @@ open Ast
   * いわゆるStrategyパターン
   *)
 module type CallbackController = sig
-  type t
-  val language: t language
+  val language: language
   val init: unit -> unit
-  val callLex: int * t -> t
-  val callGrammar: int * t list -> t
+  val callLex: int * any -> any
+  val callGrammar: int * any list -> any
 end
 
 (**
   * 言語情報に付随するコールバックを呼び出すコントローラ
   *)
 module DefaultCallbackController = struct
-module Make(X : sig type t val language: t language end) : CallbackController = struct
+module Make(X : sig val language: language end) : CallbackController = struct
   include X
   
   (**
@@ -26,13 +26,13 @@ module Make(X : sig type t val language: t language end) : CallbackController = 
     *)
   let init(): unit = () (* do nothing *)
   
-  let callLex ((id: int), (value: t)): t =
+  let callLex ((id: int), (value: any)): any =
     let Language(lex,_, _) = language in
     match List.nth lex id with
     | LexRule(token,_,_,Some(callback)) -> callback(value, Obj.magic token)
     | _ -> value
 
-  let callGrammar((id: int), (children: t list)): t =
+  let callGrammar((id: int), (children: any list)): any =
     let Language(_,grammer, _) = language in
     match List.nth grammer id with
     | GrammarRule(ltoken,_,Some(callback)) -> callback(children, ltoken)
@@ -44,7 +44,7 @@ end
   * ASTを構築するコントローラ
   *)
 module ASTConstructor = struct
-module Make(X : sig type t val language: t language end) : CallbackController = struct
+module Make(X : sig val language: language end) : CallbackController = struct
   include X
   (**
     * 解析を開始する際、初期化のために呼び出される
@@ -52,12 +52,12 @@ module Make(X : sig type t val language: t language end) : CallbackController = 
     *)
   let init(): unit = () (* do nothing *)
 
-  let callLex ((id: int), (value: t)): t =
+  let callLex ((id: int), (value: any)): any =
     let Language(lex,_, _) = language in
     let LexRule(token,_,_,_) = List.nth lex id in
     Obj.magic(ASTNode(token, Obj.magic value, []))
 
-  let callGrammar((id: int), (children: t list)): t =
+  let callGrammar((id: int), (children: any list)): any =
     let Language(_,grammer, _) = language in
     let GrammarRule(ltoken,_,_) = List.nth grammer id in
     Obj.magic(ASTNode(ltoken, Obj.magic (), Obj.magic children))

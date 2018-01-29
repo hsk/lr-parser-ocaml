@@ -5,13 +5,12 @@ open Callback
     * 字句解析器
     * 入力を受け取ってトークン化する
     *)
-module Lexer = struct
 module Make(C : CallbackController) = struct
-  let Language(lex,_, _) = C.language
+  let Language(lex,grammar, _) = C.language
   (**
     * 入力からトークン1つ分読み込む
     *)
-  let step (input:string): (string * C.t tokenizedInput) =
+  let step (input:string): (string * tokenizedInput) =
     if (input = "") then (input, (symbol_eof,Obj.magic "")) else begin (* 最後にEOFトークンを付与 *)
     let (_,result,result_match,result_id) = List.fold_left(
     fun (id,result,result_match,result_id) (LexRule(token,pattern,rule_priority,_) as rule) ->
@@ -49,5 +48,4 @@ module Make(C : CallbackController) = struct
       | (i,r) -> loop i (r::result)
     in
     loop input []
-end
 end

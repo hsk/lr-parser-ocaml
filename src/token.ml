@@ -2,12 +2,13 @@
   * トークン名
   *)
 type token = string
+type any = string
 
 (**
   * トークン化された入力
   * トークン名と、字句規則にマッチした元々の入力
   *)
-type 'n tokenizedInput = (token * 'n)
+type tokenizedInput = (token * any)
 
 (**
   * 入力の終端を表す終端記号名
