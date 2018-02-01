@@ -1,82 +1,100 @@
 open Token
 open Callback
+open Language
 
-(**
-  * 構文解析器
-  *)
-module Make(C : CallbackController) = struct
-module Make( D:sig
-  val parsingtable: Parsingtable.parsingTable
-end) = struct
-include D
-module L = Lexer.Make(C)
+(* 構文解析器の実行する命令群 *)
+type op =
+  | Shift of int
+  | Reduce of int
+  | Conflict of int list * int list (* Shift/Reduceコンフリクト *)
+  | Accept
+  | Goto of int
 
-let rec drop rnum acc res =
-  match (rnum, acc, res) with
+let show_ls ls = "[" ^ String.concat "," ls ^ "]"
+let show_ints ls =show_ls (List.map string_of_int ls)
+let show_op = function
+  | Shift(i) -> Printf.sprintf "Shift(%d)" i
+  | Reduce(i) -> Printf.sprintf "Reduce(%d)" i
+  | Conflict(l,r) -> Printf.sprintf "Conflict(%s,%s)" (show_ints l) (show_ints r)
+  | Accept -> Printf.sprintf "Accept"
+  | Goto(i) -> Printf.sprintf "Goto(%d)" i
+
+(* 構文解析表 *)
+type parsingTable = (Token.token * op) list list
+
+let show1(p: (Token.token * op) list):string =
+  show_ls (List.map (fun(t,op)->Token.show t ^ " -> " ^ show_op op) p)
+
+let show (p:parsingTable) = show_ls (List.map show1 p)
+
+(* 構文解析器 *)
+type parser = {
+  grammar: Language.grammarDefinition;
+  parsingtable: parsingTable;
+  callback_controller: callbackController
+}
+
+let rec drop = function
   | (0, acc, res) -> (acc, res)
-  | (n, acc, a :: res) -> drop(n - 1) (a :: acc) res
-  | _ -> failwith("stack is empty")
+  | (n, acc, a :: res) -> drop (n - 1, a::acc, res)
+  | _ -> failwith "stack is empty"
 
-(**
- * 構文解析する
- * states 現在読んでいる構文解析表の状態番号を置くスタック
- * results 解析中のASTノードを置くスタック
- *)
-let rec actions inputs states results = 
+(* 構文解析ステートマシン *)
+(* states 現在読んでいる構文解析表の状態番号を置くスタック *)
+(* results 解析中のASTノードを置くスタック *)
+let rec actions p inputs states results = 
   match (states, inputs) with
   | (_, []) -> ("", results)
   | (state::_, (token,value)::inp) ->
-    begin try match List.assoc token (List.nth parsingtable state) with
-        | Accept -> ("", results) (* 構文解析完了 *)
-        | Shift(to1) -> actions inp (to1 :: states) (value :: results)
-        | Reduce(grammar_id) -> (* reduceオペレーション *)
-          let  Language.GrammarRule(ltoken,pattern,_) = List.nth L.grammar(grammar_id) in
-          let rnum = List.length pattern in
-          (* 右辺の記号の数だけスタックからポップする *)
-          let (children, results2) = drop rnum [] results in
-          let child = C.callGrammar(grammar_id, children) in
-          (* 対応する規則の右辺の記号の数だけスタックからポップする *)
-          let (_,((state2::_) as states2)) = drop rnum [] states in
-          (* このままgotoオペレーションを行う *)
-          begin match List.assoc ltoken (List.nth parsingtable state2) with
-            | Goto(to1) -> actions inputs (to1 :: states2) (child :: results2) (* 必ず Gotoアクション *)
-            | _ -> ("parse failed: goto operation expected after reduce operation", child :: results2)
-          end
-        | Conflict(shift_to, reduce_grammar) ->
-          let err = Buffer.create 80 in
-          let log = Buffer.add_string err in
-          log "conflict found:\n";
-          log ("current state " ^ string_of_int state ^ ":" ^ (Parsingtable.show1 (List.nth parsingtable state)) ^ "\n");
-          log ("shift:" ^ Parsingtable.show_ints shift_to ^
-                    ",reduce:" ^ Parsingtable.show_ints reduce_grammar ^ "\n");
-          shift_to |> List.iter (fun (to1: int) ->
-            log (Printf.sprintf "shift to %d:%s\n" to1 (Parsingtable.show1 (List.nth parsingtable to1)))
-          );
-          reduce_grammar |> List.iter (fun (id: int) ->
-            log (Printf.sprintf "reduce grammar %d:%s\n" id (Parsingtable.show1 (List.nth parsingtable id)))
-          );
-          log "parser cannot parse conflicted grammar\n";
-          (Buffer.contents err, results)
-    with Not_found -> ("parse failed: unexpected token:" ^ token ^ " state:" ^ string_of_int state, results) (* 未定義 *)
+    begin try match List.assoc token (List.nth p.parsingtable state) with
+    | Accept -> ("", results) (* 完了 *)
+    | Shift(to1) -> actions p inp (to1 :: states) (value :: results)
+    | Reduce(grammar_id) ->
+      let (ltoken,pattern,_) = List.nth p.grammar(grammar_id) in
+      let rnum = List.length pattern in
+      (* 右辺の記号の数だけポップ *)
+      let (children, results2) = drop (rnum, [], results) in
+      let child = p.callback_controller.callGrammar(grammar_id, children) in
+      (* 対応する規則の右辺の記号の数だけポップ *)
+      let (_,((state2::_) as states2)) = drop (rnum, [], states) in
+      (* 次は必ず Goto *)
+      begin match List.assoc ltoken (List.nth p.parsingtable state2) with
+      | Goto(to1) -> actions p inputs (to1 :: states2) (child :: results2)
+      | _ -> ("parse failed: goto operation expected after reduce operation", child :: results2)
+      end
+    | Conflict(shift_to, reduce_grammar) ->
+      let err = Buffer.create 80 in
+      let log str = Buffer.add_string err (str ^ "\n") in
+      log "conflict found:";
+      log ("current state " ^ string_of_int state ^ ":" ^ (show1 (List.nth p.parsingtable state)));
+      log ("shift:" ^ show_ints shift_to ^
+           ",reduce:" ^ show_ints reduce_grammar);
+      List.iter (fun (to1: int) ->
+        log (Printf.sprintf "shift to %d:%s" to1 (show1 (List.nth p.parsingtable to1)))
+      ) shift_to;
+      List.iter (fun (id: int) ->
+        log (Printf.sprintf "reduce grammar %d:%s" id (show1 (List.nth p.parsingtable id)))
+      ) reduce_grammar;
+      log "parser cannot parse conflicted grammar";
+      (Buffer.contents err, results)
+    with Not_found ->
+      (Printf.sprintf "parse failed: unexpected token:%s state: %d" token state, results) (* 未定義 *)
     end
 
-(**
-  * 構文解析を実行する
-  * @param {string} input 解析する入力文字列
-  * @returns {any} 解析結果(返る結果はコントローラによって異なる)
-  *)
-let parse(input: string): any =
-  (* parsingtableはconflictを含む以外は正しさが保証されているものと仮定する
-     inputsは正しくないトークンが与えられる可能性を含む
-     TODO: 詳細な例外処理、エラー検知 *)
-  let (error,result_stack) = actions (L.exec input) [0] [] in
-  if error <> "" then begin
-    Printf.printf "%s\n" error;
-    Printf.printf "parse failed.\n"
-  end;
+let parse p lexer input =
+  let (error,result_stack) = actions p (Lexer.exec p.callback_controller lexer input) [0] [] in
+  if error <> "" then Printf.printf "%s\nparse failed.\n" error;
   if List.length result_stack <> 1 then Printf.printf "failed to construct tree.\n";
   List.nth result_stack 0
 
+(* Parserを生成するためのファクトリ *)
 
-end
-end
+let create language parsingtable =
+  let Language(_,grammar,_) = language in
+  let callback_controller = Callback.makeDefaultConstructor language in
+  {grammar; parsingtable; callback_controller}
+
+let createAst language parsingtable =
+  let Language(_,grammar,_) = language in
+  let callback_controller = Callback.makeASTConstructor language in
+  {grammar; parsingtable; callback_controller}
