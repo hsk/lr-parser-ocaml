@@ -40,3 +40,6 @@ all:
 
 clean:
 	rm -rf src/*.cm* src/parser/*.cm* src/precompiler/*.cm* src/parsergenerator/*.cm* test/*.cm* test/data/*.cm* test/parser/*.cm* test/precompiler/*.cm* test/parsergenerator/*.cm*
+cleanall:
+	make clean
+	rm -rf test1 a.out *.cache
