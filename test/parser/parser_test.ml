@@ -1,14 +1,14 @@
 open OUnit
 open Token
+open Language
+open Ast
+open Parser
 open Sample_language
 open Parsergenerator
-open Parser
-open Language
-open Callback
 
 let test () =
   let parsingtable = generateParsingTable test_calc_language in
-  let parser = Parser.createAst test_calc_language parsingtable in
+  let parser = Ast.createParser test_calc_language parsingtable in
   "parser test" >::: [
     "parser factory" >:: begin fun () ->
       (*Printf.printf "%s\n%!" (Parser.show(parsingtable));*)
@@ -18,7 +18,7 @@ let test () =
     "getting calc language ast" >:: begin fun () ->
       (*let (ast : ast) = Obj.magic(parse parser (getLexer test_calc_language) "1") in
       Printf.printf "ast=%s\n%!" (Callback.show ast);*)
-      assert(Obj.magic(parse parser (Lexer.createAst test_calc_language) "1+1") =
+      assert(Obj.magic(parse parser (Ast.createLex test_calc_language) "1+1") =
         ASTNode("EXP", "",
           [
             ASTNode("EXP", "", [
@@ -33,7 +33,7 @@ let test () =
       )
     end;
     "invalid input" >:: begin fun () ->
-      assert(Obj.magic(parse parser (Lexer.createAst test_calc_language) "1zzz") = ASTNode("DIGITS", "1", []))
+      assert(Obj.magic(parse parser (Ast.createLex test_calc_language) "1zzz") = ASTNode("DIGITS", "1", []))
     end;
   ]
 let test2 () =

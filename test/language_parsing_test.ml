@@ -4,18 +4,6 @@ open Parsergenerator
 open Parser
 open Language_language
 
-let read filename =
-  let lines = ref [] in
-  let chan = open_in filename in
-  try
-    while true; do
-      lines := input_line chan :: !lines
-    done;
-    ""
-  with End_of_file ->
-    close_in chan;
-    String.concat "\n" (List.rev !lines)
-
 let test () =
   let input = read("language") in
   let table = generateParsingTable rule_language in

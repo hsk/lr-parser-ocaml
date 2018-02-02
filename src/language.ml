@@ -32,3 +32,23 @@ let show_grammarDef ls = "[" ^ String.concat ";" (List.map show_grammarRule ls) 
 let show = function
   | Language(lex,grammar,token) ->
     Printf.sprintf "Language(%s,%s,%S)" (show_lexDef lex) (show_grammarDef grammar) token
+
+(* 字句解析・構文解析時に呼び出されるコールバックを管理するコントローラー *)
+(* いわゆるStrategyパターン *)
+type callbackController = {
+  callLex: int * any -> any;
+  callGrammar: int * any list -> any;
+}
+
+(* 言語情報に付随するコールバックを呼び出すコントローラ *)
+let makeDefaultConstructor (Language(lex,grammer,_)) = {
+  callLex = begin fun ((id: int), (value: any)) ->
+    match List.nth lex id with
+    | (token,_,_,Some(callback)) -> callback(value, Obj.magic token)
+    | _ -> value
+  end;
+  callGrammar = fun ((id: int), (children: any list)) ->
+    match List.nth grammer id with
+    | (ltoken,_,Some(callback)) -> callback(children, ltoken)
+    | _ -> List.nth children 0
+}

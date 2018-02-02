@@ -1,9 +1,9 @@
 open OUnit
-open Lexer
-open Sample_language
 open Token
 open Language
 open Callback
+open Lexer
+open Sample_language
 
 let test () =
   "Lexer test" >::: [
@@ -20,7 +20,7 @@ let test () =
         "SEPARATE", "|";
         "INVALID", "&";
         "INVALID", "0";
-        "ID", "ax";
+        "ID", "ax";  
         "ATOM", "x";
         "ID", "z";
         "SEMICOLON", ";";
@@ -200,3 +200,5 @@ let test () =
       assert_raises (Failure "custom callback") (fun () ->exec c lexer " x ")
     end;
   ]
+
+let _ = run_test_tt_main(test())

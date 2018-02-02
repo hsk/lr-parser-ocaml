@@ -1,5 +1,4 @@
 open Token
-open Callback
 open Language
 
 (* 構文解析器の実行する命令群 *)
@@ -86,6 +85,4 @@ let parse parser lexer input =
 (* Parserを生成するためのファクトリ *)
 
 let create language parsingtable =
-  (getGrammar language, parsingtable, Callback.makeDefaultConstructor language)
-let createAst language parsingtable =
-  (getGrammar language, parsingtable, Callback.makeASTConstructor language)
+  (getGrammar language, parsingtable, makeDefaultConstructor language)

@@ -3,6 +3,7 @@ open OUnit
 let _ =
   run_test_tt_main("All test" >::: [
     Lexer_test.test ();
+    Rule_parsing_test.test ();
     Nullableset_test.test ();
     Symboldiscriminator_test.test();
     Firstset_test.test ();

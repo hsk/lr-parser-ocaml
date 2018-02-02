@@ -1,6 +1,5 @@
-open Language
 open Token
-open Callback
+open Language
 
 (* 入力からトークン1つ分読み込む *)
 let step (c:callbackController) lex (input:string): (string * tokenizedInput) =
@@ -46,4 +45,3 @@ let exec c lex input =
 let show ls = "[" ^ String.concat ";" (List.map (fun (a,b)-> a^","^b) ls) ^ "]"
 
 let create lang = exec (makeDefaultConstructor lang) (getLexer lang)
-let createAst lang = exec (makeASTConstructor lang) (getLexer lang)

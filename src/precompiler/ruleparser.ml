@@ -114,3 +114,15 @@ let rule_parsing_table: parsingTable = [
 
 (* 言語定義ファイルを読み込むための構文解析器 *)
 let rule_parser = create rule_language rule_parsing_table
+
+let read filename =
+  let lines = ref [] in
+  let chan = open_in filename in
+  try
+    while true; do
+      lines := input_line chan :: !lines
+    done;
+    ""
+  with End_of_file ->
+    close_in chan;
+    String.concat "\n" (List.rev !lines)
