@@ -1,9 +1,17 @@
 open OUnit
 open Token
 open Language
-open Callback
 open Lexer
-open Sample_language
+
+let test_sample_lex: lexDefinition = [
+  "ATOM",      Str("x"),0,None;
+  "ID",        Reg("[a-zA-Z_][a-zA-Z0-9_]*"),0,None;
+  "SEMICOLON", Str(";"),0,None;
+  "SEPARATE",  Str("|"),0,None;
+  "", Reg("(\\r\\n|\\r|\\n)+"),0,None;
+  "", Reg("[ \\f\\t]+"),0,None;
+  "INVALID",   Reg("."),0,None;
+]
 
 let test () =
   "Lexer test" >::: [
@@ -11,9 +19,8 @@ let test () =
       assert_equal "a" "a"
     end;
     "exec valid input" >:: begin fun () ->
-      let lexer = test_sample_lex in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "xabc;x|&0ax x z;") [
+      let lexing = create(language(test_sample_lex, ["S", [], None], "S")) in
+      assert_equal ~printer:Lexer.show (lexing "xabc;x|&0ax x z;") [
         "ID", "xabc";
         "SEMICOLON", ";";
         "ATOM", "x";
@@ -27,45 +34,20 @@ let test () =
         "EOF", "";
       ]
     end;
-    
     "exec invalid input" >:: begin fun () ->
-      let lexer = [] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_raises (Failure "no pattern matched") (fun () ->exec c lexer "xabc;x|&0ax x z;")
+      let lexing = create(language([], ["S", [], None], "S")) in
+      assert_raises (Failure "no pattern matched") (fun () ->lexing "xabc;x|&0ax x z;")
     end;
-    
     "exec no length input" >:: begin fun () ->
-      let lexer = test_sample_lex in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "") [
+      let lexing = create(language(test_sample_lex, ["S", [], None], "S")) in
+      assert_equal ~printer:Lexer.show (lexing "") [
         "EOF", ""
       ];
-      let lexer = [] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "") [
+      let lexing = create(language([], ["S", [], None], "S")) in
+      assert_equal ~printer:Lexer.show (lexing "") [
         "EOF", ""
       ]
     end;
-    (*
-    "regexp flags" >:: begin fun () ->
-      let lexer = [
-        "I", Reg("(?i)AbC"),0,None;
-        "M", Reg("(?m)x\\nyz"),0,None;
-        "U", Reg("(?u)\\u0064\\u0065\\u0066"),0,None;
-        "G", Reg("pqr"),0,None;
-        "A", Reg("(?imu)\\u0061\\nC"),0,None;
-      ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "abcx\\nyzdefpqra\\nc") [
-        "I", "abc";
-        "M", "x\\nyz";
-        "U", "def";
-        "G", "pqr";
-        "A", "a\\nc";
-        "EOF", "";
-      ]
-    end;
-    *)
     "skip string pattern if the following is \\\\w" >:: begin fun () ->
       let lexer = [
         "STR", Str("abc"),0,None;
@@ -73,8 +55,8 @@ let test () =
         "ASTERISK", Str("*"),0,None;
         "XYZ", Str("xyz"),0,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "abcxyz*abc*xyz*abcabc") [
+      let lexing = create(language(lexer, ["S", [], None], "S")) in
+      assert_equal ~printer:Lexer.show (lexing "abcxyz*abc*xyz*abcabc") [
         "REGEXP","abc";
         "XYZ","xyz";
         "ASTERISK","*";
@@ -101,8 +83,8 @@ let test () =
         "W", Str("w"),0,None;
         "", Str(" "),0,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_equal ~printer:Lexer.show (exec c lexer " +-+-*abcd xyzw") [
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_equal ~printer:Lexer.show (lexing " +-+-*abcd xyzw") [
         "PM","+-";
         "PMA","+-*";
         "ABCD2","abcd";
@@ -122,8 +104,8 @@ let test () =
         "D", Reg("d"),0,None;
         "", Str(" "),0,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_equal ~printer:Lexer.show (exec c lexer " +-+-*abcd ") [
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_equal ~printer:Lexer.show (lexing " +-+-*abcd ") [
         "PM", "+-";
         "PMA", "+-*";
         "ABCD", "abcd";
@@ -136,8 +118,8 @@ let test () =
         "ABC", Reg("abc"),0,None;
         "", Str(" "),0,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_equal ~printer:Lexer.show (exec c lexer " *abc* ") [
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_equal ~printer:Lexer.show (lexing " *abc* ") [
         "ASTERISK", "*";
         "ABC", "abc";
         "ASTERISK", "*";
@@ -151,8 +133,8 @@ let test () =
         "", Str(" "),0,None;
         "ABCAST", Reg("abc\\*"), 1,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_equal ~printer:Lexer.show (exec c lexer " *abc* ") [
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_equal ~printer:Lexer.show (lexing " *abc* ") [
         "ASTERISK", "*";
         "ABCAST", "abc*";
         "EOF", "";
@@ -166,13 +148,13 @@ let test () =
         "ABCAST", Reg("abc\\*"), 1,None;
         "ABCAST", Reg("abc\\*"), 1,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_equal ~printer:Lexer.show (exec c lexer " *abc* ") [
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_equal ~printer:Lexer.show (lexing " *abc* ") [
         "ASTERISK", "*";
         "ABCAST", "abc*";
         "EOF", "";
       ];
-      assert_equal ~printer:Lexer.show (exec c lexer " *abc* ") [
+      assert_equal ~printer:Lexer.show (lexing " *abc* ") [
         "ASTERISK", "*";
         "ABCAST", "abc*";
         "EOF", "";
@@ -186,8 +168,8 @@ let test () =
         );
         "", Str(" "),0,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_raises (Failure "custom callback") (fun () ->exec c lexer " x ")
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_raises (Failure "custom callback") (fun () ->lexing " x ")
     end;
     "custom callback (set CallbackController)" >:: begin fun () ->
       let lexer = [
@@ -196,8 +178,8 @@ let test () =
         );
         "", Str(" "),0,None;
       ] in
-      let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
-      assert_raises (Failure "custom callback") (fun () ->exec c lexer " x ")
+      let lexing = create(language(lexer, ["S", [], None], "S")) in      
+      assert_raises (Failure "custom callback") (fun () ->lexing " x ")
     end;
   ]
 

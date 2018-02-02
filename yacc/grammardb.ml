@@ -21,7 +21,7 @@ let initTokenMap(grammar: grammarDefinition): int M.t =
     !tokenid_counter
   in
   let tokenmap = M.singleton "EOF" (new_tokenid()) in (* 入力の終端$の登録 *)
-  let tokenmap = M.add symbol_syntax (new_tokenid()) tokenmap in (* 仮の開始記号S'の登録 *)
+  let tokenmap = M.add "S'" (new_tokenid()) tokenmap in (* 仮の開始記号S'の登録 *)
 
   (* 左辺値の登録 *)
   let tokenmap = List.fold_left(fun (tokenmap:int M.t) (ltoken,_,_) ->
@@ -47,11 +47,11 @@ let initDefMap(grammar: grammarDefinition): (int * grammarRule) array M.t =
   ) (0,M.empty) grammar in
   rulemap
 
-let genGrammarDB(Language(lex,grammar,start_symbol): language) :grammarDB =
+let genGrammarDB({lex;grammar;start}: language) :grammarDB =
   let symbols = genSymbolDiscriminator(grammar) in
   {
     grammar=grammar;
-    start_symbol=start_symbol;
+    start_symbol=start;
     first=generateFirst(grammar, symbols);
     symbols=symbols;
     tokenmap= initTokenMap(grammar);
@@ -73,8 +73,8 @@ let findRules((db: grammarDB), (x: token)): (int * grammarRule) array =
 (* 規則idに対応した規則を返す *)
 (* -1が与えられた時は S' -> S $の規則を返す *)
 let getRuleById((db: grammarDB), (id: int)): grammarRule =
-  if (id = -1) then (symbol_syntax, [db.start_symbol], None)
-  (* GrammarRule(symbol_syntax, Array(this.start_symbol, SYMBOL_EOF)) *)
+  if (id = -1) then ("S'", [db.start_symbol], None)
+  (* GrammarRule("S'", Array(this.start_symbol, "EOF")) *)
   else if id >= 0 && id < List.length db.grammar then List.nth db.grammar id
   else failwith("grammar id out of range")
 

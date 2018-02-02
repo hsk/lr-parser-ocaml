@@ -37,4 +37,4 @@ let grammar: grammarDefinition = [
   "SYMBOLLIST", ["LABEL"], None;
 ]
 
-let language_language_without_callback = Language(lex, grammar, "LANGUAGE")
+let language_language_without_callback = language(lex, grammar, "LANGUAGE")

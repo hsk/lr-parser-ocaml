@@ -83,7 +83,7 @@ let test () =
   ]
 
 let test2 () =
-  let Language.Language(lexer,grammar,_) = test_empty_language in
+  let grammar = test_empty_language.grammar in
   let first = generateFirst(grammar, genSymbolDiscriminator(grammar)) in
   "FirstSet test(empty language)" >::: [
     "First(S) is {}" >:: begin fun () ->

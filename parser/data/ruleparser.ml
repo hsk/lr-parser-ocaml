@@ -38,7 +38,7 @@ let grammar: grammarDefinition = [
     | "",(ltoken,_,_)::_ -> ltoken
     | s,_ -> s
     in
-    Obj.magic (Language(Obj.magic(List.nth c 0), grammar, start_symbol))
+    Obj.magic (language(Obj.magic(List.nth c 0), grammar, start_symbol))
   );
   "LEX", ["LEX";"LEXSECT"], Some(fun (c, _) ->
     Obj.magic ((Obj.magic (List.nth c 0)) @ [(Obj.magic (List.nth c 1):lexRule)])
@@ -77,7 +77,7 @@ let grammar: grammarDefinition = [
 ]
 
 (* 言語定義文法の言語定義 *)
-let rule_language: language = Language(lex, grammar, "LANGUAGE")
+let rule_language: language = language(lex, grammar, "LANGUAGE")
 
 (* 言語定義文法の言語定義、の構文解析表 *)
 let rule_parsing_table: parsingTable = [

@@ -33,4 +33,4 @@ let test_broken_lex: lexDefinition = [
   "INVALID", Reg("."),0,None;
 ]
 
-let test_broken_language = Language(test_broken_lex, test_broken_grammar, "EXP")
+let test_broken_language = language(test_broken_lex, test_broken_grammar, "EXP")

@@ -2,7 +2,6 @@ all:
 	ocamlfind ocamlc -o test1 -package oUnit -package str -linkpkg -g \
 		-w -31-8 \
 		-I lexer lexer/token.ml lexer/language.ml lexer/lexer.ml \
-		-I lexer/data lexer/data/sample_language.ml \
 		-I lexer/test lexer/test/lexer_test.ml \
 		-I parser parser/parser.ml \
 		-I parser/data parser/data/ruleparser.ml parser/data/language_language.ml \
@@ -12,16 +11,17 @@ all:
 		   yacc/dfagenerator.ml yacc/parsergenerator.ml \
 		-I precompiler \
 		-I test -I test/data  -I test/parser -I test/precompiler -I test/yacc \
-		test/data/broken_language.ml \
+		test/data/sample_language.ml \
 		test/yacc/nullableset_test.ml \
 		test/yacc/symboldiscriminator_test.ml \
 		test/yacc/firstset_test.ml \
 		test/yacc/syntaxdb_test.ml \
 		test/yacc/closureitem_test.ml \
 		test/yacc/closureset_test.ml \
-		lexer/ast.ml \
+		parser/ast.ml \
 		test/parser/parser_test.ml \
 		test/language_parsing_test.ml \
+		test/data/broken_language.ml \
 		test/broken_language_test.ml \
 		test/all_test.ml \
 

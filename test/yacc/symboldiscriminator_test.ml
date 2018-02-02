@@ -83,14 +83,14 @@ let test () =
     ];
     "test empty language" >::: [
       "Check nonterminal symbols set 3" >:: begin fun () ->
-        let Language(_,grammar,_) = test_empty_language in
+        let {grammar} = test_empty_language in
         let symbols = genSymbolDiscriminator(grammar) in
         let nt = symbols.nonterminal_symbols in
         assert(S.mem "S" nt);
         assert_equal (S.cardinal nt) 1
       end;
       "Check terminal symbols set 3" >:: begin fun () ->
-        let Language(_,grammar,_) = test_empty_language in
+        let {grammar} = test_empty_language in
         let symbols = genSymbolDiscriminator(grammar) in
         let t = symbols.terminal_symbols in
         assert_equal (S.cardinal t) 0

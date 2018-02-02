@@ -25,7 +25,7 @@ let test () =
         assert_equal (getRuleById(grammardb, 1)) ("E", ["LIST"; "SEMICOLON"], None)
       end;
       "rule of grammar -1 is: S' -> S" >:: begin fun () ->
-        assert_equal (getRuleById(grammardb, -1)) (symbol_syntax, ["S"], None)
+        assert_equal (getRuleById(grammardb, -1)) ("S'", ["S"], None)
       end;
       "throw error by calling rule of grammar -2" >:: begin fun () ->
         assert_raises (Failure "grammar id out of range")

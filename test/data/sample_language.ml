@@ -20,9 +20,9 @@ let test_sample_lex: lexDefinition = [
   "INVALID",   Reg("."),0,None;
 ]
 
-let test_sample_language = Language(test_sample_lex, test_sample_grammar, "S")
+let test_sample_language = {lex=test_sample_lex; grammar=test_sample_grammar; start="S"}
 
-let test_empty_language = Language([], ["S", [], None], "S")
+let test_empty_language = {lex=[]; grammar=["S", [], None];start="S"}
 
 let test_calc_grammar: grammarDefinition = [
   "EXP", ["EXP"; "PLUS"; "TERM"], Some(fun(c,_) -> Obj.magic((Obj.magic List.nth c(0) : int) + (Obj.magic List.nth c(2) : int)));
@@ -44,7 +44,7 @@ let test_calc_lex: lexDefinition = [
   "INVALID", Reg("."),0,None;
 ]
 
-let test_calc_language = Language(test_calc_lex, test_calc_grammar, "EXP")
+let test_calc_language = {lex=test_calc_lex;grammar=test_calc_grammar;start="EXP"}
 
 let test_calc_language_raw_string = "
   DIGITS      /[1-9][0-9]*/
