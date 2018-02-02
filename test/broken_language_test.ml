@@ -7,21 +7,23 @@ open Callback
 open Parsergenerator
 
 let test () =
-  let pg = genParserGenerator(test_broken_language) in
-  let parser = getParser(pg) in
+  let table = generateParsingTable test_broken_language in
+  let parser = Parser.create test_broken_language table in
   "Calculator test with broken language" >::: [
     "test" >:: begin fun () ->
       assert_equal "a" "a"
     end;
     (* TODO: パーサが壊れていることを(コンソール出力以外で)知る方法 *)
     "parsing table is broken" >:: begin fun () ->
-      assert_equal (isConflicted(pg)) true;
-      assert_equal (pg.table_type) "CONFLICTED";
+      let table = generateParsingTable test_broken_language in
+      let parser = Parser.create test_broken_language table in
+      assert_equal (isConflicted()) true;
+      assert_equal !table_type "CONFLICTED";
     end;
     "\"1+1\" equals 2" >:: begin fun () ->
-      assert_equal (Obj.magic (parse parser test_broken_lex "1+1")) 2
+      assert_equal (Obj.magic (parse parser (Lexer.create test_broken_language) "1+1")) 2
     end;
     "\"( 1+1 )*3 + ( (1+1) * (1+2*3+4) )\\n\" equals 28 (to be failed)" >:: begin fun () ->
-      assert ((Obj.magic (parse parser test_broken_lex "( 1+1 )*3 + ( (1+1) * (1+2*3+4) )\n"):int) <> 28)
+      assert ((Obj.magic (parse parser (Lexer.create test_broken_language) "( 1+1 )*3 + ( (1+1) * (1+2*3+4) )\n"):int) <> 28)
     end;
   ]

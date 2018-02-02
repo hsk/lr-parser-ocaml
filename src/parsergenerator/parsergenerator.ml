@@ -7,20 +7,10 @@ open Closureset
 open Closureitem
 open Symboldiscriminator
 
-(* 言語定義から構文解析表および構文解析器を生成するパーサジェネレータ *)
-type parserGenerator = {
-  language: language;
-  grammardb: grammarDB;
-  dfa_generator: generator;
-  parsing_table: parsingTable;
-  table_type: string (* "LR1" | "LALR1" | "CONFLICTED" *)
-}
-
-type res = parsingTable * bool
+let table_type = ref ""
 (* DFAから構文解析表を構築する *)
-let generateParsingTable((grammardb: grammarDB), (dfa: dfa)): res =
-  let success = ref true in
-  let parsing_table = dfa |> List.map (fun node ->
+let generateParsingTable((grammardb: grammarDB), (dfa: dfa)): parsingTable =
+  dfa |> List.map (fun node ->
     (* 辺をもとにshiftとgotoオペレーションを追加 *)
     let table_row = M.fold_left(fun table_row (label, to1) ->
       if isTerminalSymbol(grammardb.symbols, label) then M.add label (Shift(to1)) table_row
@@ -37,15 +27,13 @@ let generateParsingTable((grammardb: grammarDB), (dfa: dfa)): res =
         (* 既に同じ記号でオペレーションが登録されていないか確認 *)
         if not (M.mem label table_row) then M.add label (Reduce(item.rule_id)) table_row
         else begin (* コンフリクトが発生 *)
-          success := false; (* 構文解析に失敗 *)
+          table_type := "CONFLICTED"; (* 構文解析に失敗 *)
           let conflicted =
             match M.find label table_row with
-            | Shift(to1) -> (* shift/reduce コンフリクト *)
-              Conflict([to1],[item.rule_id])
-            | Reduce(grammar_id) -> (* reduce/reduce コンフリクト *)
-              Conflict([], [grammar_id; item.rule_id])
-            | Conflict(shift_to, reduce_grammar) -> (* もっとやばい衝突 *)
-              Conflict(shift_to, reduce_grammar @ [item.rule_id])
+            | Shift(to1) -> Conflict([to1],[item.rule_id]) (* shift/reduce コンフリクト *)
+            | Reduce(grammar_id) -> Conflict([], [grammar_id; item.rule_id]) (* reduce/reduce コンフリクト *)
+            | Conflict(shift_to, reduce_grammar) ->
+              Conflict(shift_to, reduce_grammar @ [item.rule_id]) (* もっとやばい衝突 *)
             | _ -> Conflict([], [])
           in
           (* とりあえず衝突したオペレーションを登録しておく *)
@@ -54,31 +42,28 @@ let generateParsingTable((grammardb: grammarDB), (dfa: dfa)): res =
       ) table_row item.lookaheads
     ) table_row (Closureset.getArray(node.closure)) in
     M.bindings table_row
-  ) in
-  (parsing_table, !success)
+  )
 
-let genParserGenerator(language: language):parserGenerator =
+(* 言語定義から構文解析表および構文解析器を生成するパーサジェネレータ *)
+let generateParsingTable(language: language):parsingTable =
   let grammardb = genGrammarDB(language) in
   let dfa_generator = genDFAGenerator(grammardb) in
-  let (lalr_table, lalr_success) = generateParsingTable(grammardb, dfa_generator.lalr_dfa) in
-  if lalr_success then {language; grammardb; dfa_generator; parsing_table=lalr_table; table_type="LALR1"}
+  table_type:="LALR1";
+  let lalr_table = generateParsingTable(grammardb, dfa_generator.lalr_dfa) in
+  if !table_type <> "CONFLICTED" then lalr_table
   else begin
+    table_type:="LR1";
     (* LALR(1)構文解析表の生成に失敗 *)
     (* LR(1)構文解析表の生成を試みる *)
     Printf.printf "LALR parsing conflict found. use LR(1) table.\n";
-    let (lr_table, lr_success) = generateParsingTable(grammardb, dfa_generator.lr_dfa) in
-    if (lr_success) then {language; grammardb; dfa_generator; parsing_table=lr_table; table_type="LR1"}
+    let lr_table = generateParsingTable(grammardb, dfa_generator.lr_dfa) in
+    if !table_type <> "CONFLICTED" then lr_table
     else begin
       (* LR(1)構文解析表の生成に失敗 *)
       Printf.fprintf stderr "LR(1) parsing conflict found. use LR(1) conflicted table.\n";
-      {language; grammardb; dfa_generator; parsing_table=lr_table; table_type="CONFLICTED"}
+      lr_table
     end
   end
 
-(* 構文解析器を得る *)
-let getParser(gen: parserGenerator): parser =
-  Parser.create gen.language gen.parsing_table
-
 (* 生成された構文解析表に衝突が発生しているかどうかを調べる *)
-let isConflicted(gen: parserGenerator): bool =
-  gen.table_type = "CONFLICTED"
+let isConflicted (): bool = !table_type = "CONFLICTED"

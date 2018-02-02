@@ -9,7 +9,7 @@ let lex: lexDefinition = [
   "COLON", Str(":"),0,None;
   "SEMICOLON", Str(";"),0,None;
   "LABEL", Reg("[a-zA-Z_][a-zA-Z0-9_]*"),0,None;
-  "REGEXP", Reg("/\(\\\\\\\\.\|\\\\[([^\\\\]]\|\\\\.)*\\\\]\|[^/]\)*/[gimuy]*"), 0, Some(fun(v,_) ->
+  "REGEXP", Reg("\\/.*\\/[gimuy]*"), 0, Some(fun(v,_) ->
       let tmp = Str.split (Str.regexp "/") v in
       let flags = if String.sub v (String.length v - 1) 1 = "/" then ""
         else List.nth tmp ((List.length tmp) - 1) in
@@ -19,10 +19,10 @@ let lex: lexDefinition = [
       let p = Str.global_replace (Str.regexp "\\\\t") "\t" p in
       (if flags="" then "" else "(?" ^ flags ^ ")") ^ p
     );
-  "STRING", Reg("\".*?\""), 0,Some(fun(v,_) -> String.sub v 1 (String.length v-2));
-  "STRING", Reg("'.*?'"), 0,Some(fun(v,_) -> String.sub v 1 (String.length v-2));
-  "", Reg("\\(\\r\\n\\|\\r\\|\\n\\)+"),0,None;
-  "", Reg("[ \\t]+"),0,None;
+  "STRING", Reg("\".*\""), 0,Some(fun(v,_) -> String.sub v 1 (String.length v-2));
+  "STRING", Reg("'.*'"), 0,Some(fun(v,_) -> String.sub v 1 (String.length v-2));
+  "", Reg("\\(\r\n\\|\r\\|\n\\)+"),0,None;
+  "", Reg("[ \t]+"),0,None;
   "INVALID", Reg("."),0,None;
 ]
 
@@ -77,10 +77,10 @@ let grammar: grammarDefinition = [
 ]
 
 (* 言語定義文法の言語定義 *)
-let language_language: language = Language(lex, grammar, "LANGUAGE")
+let rule_language: language = Language(lex, grammar, "LANGUAGE")
 
 (* 言語定義文法の言語定義、の構文解析表 *)
-let language_parsing_table: parsingTable = [
+let rule_parsing_table: parsingTable = [
   ["LANGUAGE",Goto(1);"LEX",Goto(2);"LEXSECT",Goto(3);"LEXLABEL",Goto(4);"LABEL",Shift(5);"EXCLAMATION",Shift(6)];
   ["EOF",Accept];
   ["GRAMMAR",Goto(7);"LEXSECT",Goto(8);"SECT",Goto(9);"SECTLABEL",Goto(10);"LABEL",Shift(11);"DOLLAR",Shift(12);"LEXLABEL",Goto(4);"EXCLAMATION",Shift(6)];
@@ -113,4 +113,4 @@ let language_parsing_table: parsingTable = [
 ]
 
 (* 言語定義ファイルを読み込むための構文解析器 *)
-let language_parser = create language_language language_parsing_table
+let rule_parser = create rule_language rule_parsing_table

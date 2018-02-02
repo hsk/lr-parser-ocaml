@@ -6,7 +6,7 @@ open Grammardb
 type edge = int M.t
 type node = {closure: closureSet; edge: edge}
 type dfa = node list
-type generator = {grammardb: grammarDB; lr_dfa: dfa; lalr_dfa: dfa}
+type generator = {lr_dfa: dfa; lalr_dfa: dfa}
 
 (* 既存のClosureSetから新しい規則を生成し、対応する記号ごとにまとめる *)
 let generateNewClosureSets((grammardb: grammarDB), (closureset: closureSet)): closureSet M.t =
@@ -14,14 +14,14 @@ let generateNewClosureSets((grammardb: grammarDB), (closureset: closureSet)): cl
   let tmp = Array.fold_left (fun tmp i ->
     let (_,pattern,_) = getRuleById(grammardb, i.rule_id) in
     if i.dot_index = List.length pattern then tmp else (* .が末尾にある場合はスキップ *)
-    let new_ci = genClosureItem(grammardb, i.rule_id, i.dot_index + 1, i.lookaheads) in
-    let edge_label: token = List.nth pattern i.dot_index in
+    let new_ci = genClosureItem grammardb i.rule_id (i.dot_index + 1) i.lookaheads in
+    let edge_label = List.nth pattern i.dot_index in
     let items = if M.mem edge_label tmp then M.find edge_label tmp else [||] in
     M.add edge_label (Array.append items [|new_ci|]) tmp
   ) M.empty (getArray(closureset)) in
   (* ClosureItemの配列からClosureSetに変換 *)
   M.fold_left (fun result (edge_label, items) ->
-    M.add edge_label (genClosureSet(grammardb, items)) result
+    M.add edge_label (genClosureSet grammardb items) result
   ) M.empty tmp
 
 (* 与えられたnodeと全く同じnodeがある場合、そのindexを返す *)
@@ -61,12 +61,12 @@ let generateDFA(grammardb: grammarDB):dfa =
     | dfa,true -> loop dfa
     | dfa,_ -> dfa
   in
-  let item = genClosureItem(grammardb, -1, 0, [|"EOF"|]) in
-  let set = genClosureSet(grammardb, [|item|]) in
+  let item = genClosureItem grammardb (-1) 0 [|"EOF"|] in
+  let set = genClosureSet grammardb [|item|] in
   Array.to_list (loop [|{closure=set; edge= M.empty}|])
 
 (* LR(1)オートマトンの先読み部分をマージして、LALR(1)オートマトンを作る *)
-let mergeLA(lr_dfa: dfa):dfa =
+let mergeLA(grammardb, lr_dfa):dfa =
   let merge_to = ref MI.empty in (* マージ先への対応関係を保持する *)
   let rec findIndex index =
     if not (MI.mem index !merge_to) then index else (
@@ -75,13 +75,13 @@ let mergeLA(lr_dfa: dfa):dfa =
       i2
     )
   in
-  let base: node array = Array.of_list lr_dfa in
+  let base = Array.of_list lr_dfa in
   for i = 0 to Array.length base - 1 do
     if MI.mem i !merge_to then () else
     for ii = (i + 1) to Array.length base - 1 do
       if MI.mem ii !merge_to then () else
       if Closureset.isSameLR0(base.(i).closure, base.(ii).closure) then begin
-        base.(i) <- {closure=Closureset.mergeLA(base.(i).closure, base.(ii).closure); edge= base.(i).edge};
+        base.(i) <- {closure=Closureset.mergeLA(grammardb,base.(i).closure, base.(ii).closure); edge= base.(i).edge};
         merge_to := MI.add ii i !merge_to
       end
     done
@@ -105,4 +105,4 @@ let mergeLA(lr_dfa: dfa):dfa =
 (* 構文規則からLR(1)DFAおよびLALR(1)DFAを生成する *)
 let genDFAGenerator(grammardb: grammarDB):generator = 
   let lr_dfa = generateDFA(grammardb) in
-  {grammardb; lr_dfa; lalr_dfa=mergeLA lr_dfa}
+  {lr_dfa; lalr_dfa=mergeLA(grammardb, lr_dfa)}

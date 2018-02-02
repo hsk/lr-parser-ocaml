@@ -37,12 +37,12 @@ let test () =
     "exec no length input" >:: begin fun () ->
       let lexer = test_sample_lex in
       let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "" ) [
+      assert_equal ~printer:Lexer.show (exec c lexer "") [
         "EOF", ""
       ];
       let lexer = [] in
       let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in
-      assert_equal ~printer:Lexer.show (exec c lexer "" ) [
+      assert_equal ~printer:Lexer.show (exec c lexer "") [
         "EOF", ""
       ]
     end;
@@ -199,5 +199,4 @@ let test () =
       let c = makeDefaultConstructor(Language(lexer, ["S", [], None], "S")) in      
       assert_raises (Failure "custom callback") (fun () ->exec c lexer " x ")
     end;
-    
   ]

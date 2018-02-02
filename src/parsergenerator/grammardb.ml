@@ -15,31 +15,28 @@ type grammarDB = {
 
 (* それぞれの記号にidを割り振り、Token->numberの対応を生成 *)
 let initTokenMap(grammar: grammarDefinition): int M.t =
-  let tokenid_counter = ref 0 in
+  let tokenid_counter = ref (-1) in
   let new_tokenid () =
-    let id = !tokenid_counter in
     incr tokenid_counter;
-    id
+    !tokenid_counter
   in
-  let tokenmap = M.empty in
-  let tokenmap = M.add "EOF" (new_tokenid()) tokenmap in (* 入力の終端$の登録 *)
+  let tokenmap = M.singleton "EOF" (new_tokenid()) in (* 入力の終端$の登録 *)
   let tokenmap = M.add symbol_syntax (new_tokenid()) tokenmap in (* 仮の開始記号S'の登録 *)
 
   (* 左辺値の登録 *)
   let tokenmap = List.fold_left(fun (tokenmap:int M.t) (ltoken,_,_) ->
     (* 構文規則の左辺に現れる記号は非終端記号 *)
     if M.mem ltoken tokenmap then tokenmap else
-    M.add ltoken (new_tokenid ()) tokenmap
+    M.add ltoken (new_tokenid()) tokenmap
   ) tokenmap grammar in
   (* 右辺値の登録 *)
-  let tokenmap = List.fold_left(fun tokenmap (_,pattern,_) ->
+  List.fold_left(fun tokenmap (_,pattern,_) ->
     List.fold_left(fun tokenmap symbol ->
       if M.mem symbol tokenmap then tokenmap else
       (* 非終端記号でない(=左辺値に現れない)場合、終端記号である *)
       M.add symbol (new_tokenid()) tokenmap
     ) tokenmap pattern
-  ) tokenmap grammar in
-  tokenmap
+  ) tokenmap grammar
 
 (* ある記号を左辺とするような構文ルールとそのidの対応を生成 *)
 let initDefMap(grammar: grammarDefinition): (int * grammarRule) array M.t =
@@ -57,7 +54,7 @@ let genGrammarDB(Language(lex,grammar,start_symbol): language) :grammarDB =
     start_symbol=start_symbol;
     first=generateFirst(grammar, symbols);
     symbols=symbols;
-    tokenmap=  initTokenMap(grammar);
+    tokenmap= initTokenMap(grammar);
     rulemap=initDefMap(grammar)
   }
 
@@ -82,6 +79,6 @@ let getRuleById((db: grammarDB), (id: int)): grammarRule =
   else failwith("grammar id out of range")
 
 (* [[Token]]を与えると一意なidを返す *)
-let getTokenId (db,token) =
+let getTokenId db token =
   if not (M.mem token db.tokenmap) then failwith("invalid token " ^ token) else
   M.find token db.tokenmap

@@ -44,3 +44,6 @@ let exec c lex input =
   loop input []
 
 let show ls = "[" ^ String.concat ";" (List.map (fun (a,b)-> a^","^b) ls) ^ "]"
+
+let create lang = exec (makeDefaultConstructor lang) (getLexer lang)
+let createAst lang = exec (makeASTConstructor lang) (getLexer lang)

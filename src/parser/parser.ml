@@ -28,11 +28,7 @@ let show1(p: (Token.token * op) list):string =
 let show (p:parsingTable) = show_ls (List.map show1 p)
 
 (* 構文解析器 *)
-type parser = {
-  grammar: Language.grammarDefinition;
-  parsingtable: parsingTable;
-  callback_controller: callbackController
-}
+type parser = (Language.grammarDefinition * parsingTable * callbackController)
 
 let rec drop = function
   | (0, acc, res) -> (acc, res)
@@ -42,38 +38,38 @@ let rec drop = function
 (* 構文解析ステートマシン *)
 (* states 現在読んでいる構文解析表の状態番号を置くスタック *)
 (* results 解析中のASTノードを置くスタック *)
-let rec actions p inputs states results = 
-  match (states, inputs) with
-  | (_, []) -> ("", results)
-  | (state::_, (token,value)::inp) ->
-    begin try match List.assoc token (List.nth p.parsingtable state) with
+let rec actions parser inputs states results = 
+  match (parser, states, inputs) with
+  | (_, _, []) -> ("", results)
+  | ((grammar,parsingtable,controller), state::_, (token,value)::inp) ->
+    begin try match List.assoc token (List.nth parsingtable state) with
     | Accept -> ("", results) (* 完了 *)
-    | Shift(to1) -> actions p inp (to1 :: states) (value :: results)
+    | Shift(to1) -> actions parser inp (to1 :: states) (value :: results)
     | Reduce(grammar_id) ->
-      let (ltoken,pattern,_) = List.nth p.grammar(grammar_id) in
+      let (ltoken,pattern,_) = List.nth grammar(grammar_id) in
       let rnum = List.length pattern in
       (* 右辺の記号の数だけポップ *)
       let (children, results2) = drop (rnum, [], results) in
-      let child = p.callback_controller.callGrammar(grammar_id, children) in
+      let child = controller.callGrammar(grammar_id, children) in
       (* 対応する規則の右辺の記号の数だけポップ *)
       let (_,((state2::_) as states2)) = drop (rnum, [], states) in
       (* 次は必ず Goto *)
-      begin match List.assoc ltoken (List.nth p.parsingtable state2) with
-      | Goto(to1) -> actions p inputs (to1 :: states2) (child :: results2)
+      begin match List.assoc ltoken (List.nth parsingtable state2) with
+      | Goto(to1) -> actions parser inputs (to1 :: states2) (child :: results2)
       | _ -> ("parse failed: goto operation expected after reduce operation", child :: results2)
       end
     | Conflict(shift_to, reduce_grammar) ->
       let err = Buffer.create 80 in
       let log str = Buffer.add_string err (str ^ "\n") in
       log "conflict found:";
-      log ("current state " ^ string_of_int state ^ ":" ^ (show1 (List.nth p.parsingtable state)));
+      log ("current state " ^ string_of_int state ^ ":" ^ (show1 (List.nth parsingtable state)));
       log ("shift:" ^ show_ints shift_to ^
            ",reduce:" ^ show_ints reduce_grammar);
       List.iter (fun (to1: int) ->
-        log (Printf.sprintf "shift to %d:%s" to1 (show1 (List.nth p.parsingtable to1)))
+        log (Printf.sprintf "shift to %d:%s" to1 (show1 (List.nth parsingtable to1)))
       ) shift_to;
       List.iter (fun (id: int) ->
-        log (Printf.sprintf "reduce grammar %d:%s" id (show1 (List.nth p.parsingtable id)))
+        log (Printf.sprintf "reduce grammar %d:%s" id (show1 (List.nth parsingtable id)))
       ) reduce_grammar;
       log "parser cannot parse conflicted grammar";
       (Buffer.contents err, results)
@@ -81,8 +77,8 @@ let rec actions p inputs states results =
       (Printf.sprintf "parse failed: unexpected token:%s state: %d" token state, results) (* 未定義 *)
     end
 
-let parse p lexer input =
-  let (error,result_stack) = actions p (Lexer.exec p.callback_controller lexer input) [0] [] in
+let parse parser lexer input =
+  let (error,result_stack) = actions parser (lexer input) [0] [] in
   if error <> "" then Printf.printf "%s\nparse failed.\n" error;
   if List.length result_stack <> 1 then Printf.printf "failed to construct tree.\n";
   List.nth result_stack 0
@@ -90,11 +86,6 @@ let parse p lexer input =
 (* Parserを生成するためのファクトリ *)
 
 let create language parsingtable =
-  let Language(_,grammar,_) = language in
-  let callback_controller = Callback.makeDefaultConstructor language in
-  {grammar; parsingtable; callback_controller}
-
+  (getGrammar language, parsingtable, Callback.makeDefaultConstructor language)
 let createAst language parsingtable =
-  let Language(_,grammar,_) = language in
-  let callback_controller = Callback.makeASTConstructor language in
-  {grammar; parsingtable; callback_controller}
+  (getGrammar language, parsingtable, Callback.makeASTConstructor language)
