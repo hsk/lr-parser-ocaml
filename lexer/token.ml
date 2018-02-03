@@ -18,25 +18,3 @@ let show_lexRule = function
   | (token,ptn,int,Some(_)) -> Printf.sprintf "(%S,%s,%d,Some(_))" token (show_ptn ptn) int  
 let show_lexDef ls = "[" ^ String.concat ";" (List.map show_lexRule ls) ^ "]"
 let show_ts ts = "[" ^ String.concat ";" (List.map (fun t -> Printf.sprintf "%S" t) ts) ^ "]"
-
-module S = Set.Make(struct
-  type t=token
-  let compare=String.compare
-end)
-module M = struct
-  module M = Map.Make(struct
-    type t=token
-    let compare=String.compare
-  end)
-  include M
-  let fold_left f v t = List.fold_left f v (M.bindings t)
-end
-
-module MI = struct
-  module MI = Map.Make(struct
-    type t=int
-    let compare i ii = i - ii
-  end)
-  include MI
-  let fold_left f v t = List.fold_left f v (M.bindings t)
-end

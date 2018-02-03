@@ -1,5 +1,6 @@
 open Language
 open Token
+open Utils
 open Parser
 open Dfagenerator
 open Grammardb

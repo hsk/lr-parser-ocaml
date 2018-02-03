@@ -1,4 +1,5 @@
 open OUnit
+open Utils
 open Symboldiscriminator
 open Sample_language
 open Token

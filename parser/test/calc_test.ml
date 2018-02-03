@@ -47,10 +47,10 @@ let test () =
       assert(Obj.magic(parser (Lexer.create lex) "123") = 123)
     end;
     "1+1" >:: begin fun () ->
-      assert(Obj.magic(parser (Lexer.create lex) "1+1") = 1+1)
+      assert(Obj.magic(parser (Lexer.create lex) "1+1") = 2)
     end;
-    "1+2*3" >:: begin fun () ->
-      assert(Obj.magic(parser (Lexer.create lex) "1+2*3") = 1+2*3)
+    "2*3+4" >:: begin fun () ->
+      assert(Obj.magic(parser (Lexer.create lex) "2*3+4") = 10)
     end;
     "2*(3+4)" >:: begin fun () ->
       assert(Obj.magic(parser (Lexer.create lex) "2*(3+4)") = 14)

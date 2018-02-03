@@ -1,5 +1,6 @@
 open Language
 open Token
+open Utils
 
 (* 終端/非終端記号の判別を行う *)
 type symbolDiscriminator = {terminal_symbols: S.t; nonterminal_symbols: S.t}

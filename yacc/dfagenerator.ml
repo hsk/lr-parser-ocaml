@@ -1,4 +1,5 @@
 open Token
+open Utils
 open Closureitem
 open Closureset
 open Grammardb

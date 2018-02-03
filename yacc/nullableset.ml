@@ -1,5 +1,6 @@
 open Language
 open Token
+open Utils
 
 (* ある非終端記号から空列が導かれうるかどうかを判定する *)
 type nullableSet = S.t
