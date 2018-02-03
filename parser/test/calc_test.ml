@@ -41,10 +41,19 @@ let parsing_table : parsingTable = [
 ]
 
 let test () =
-  "test grammar input with callback" >::: [
-    "custom callback in grammar" >:: begin fun () ->
-      let parser = Parser.create grammar parsing_table in
-      assert(Obj.magic(parser (Lexer.create calc_language.lex) "2*(3+4)") = 14)
+  let parser = Parser.create grammar parsing_table in
+  "calc test" >::: [
+    "123" >:: begin fun () ->
+      assert(Obj.magic(parser (Lexer.create lex) "123") = 123)
+    end;
+    "1+1" >:: begin fun () ->
+      assert(Obj.magic(parser (Lexer.create lex) "1+1") = 1+1)
+    end;
+    "1+2*3" >:: begin fun () ->
+      assert(Obj.magic(parser (Lexer.create lex) "1+2*3") = 1+2*3)
+    end;
+    "2*(3+4)" >:: begin fun () ->
+      assert(Obj.magic(parser (Lexer.create lex) "2*(3+4)") = 14)
     end;
   ]
 

@@ -8,9 +8,7 @@ LR構文解析器は、構文解析表と字句解析器を受け取って構文
 
 - language.ml 言語定義
 - parser.ml LR構文解析器
-- data/rule_parser.ml 言語定義のパーサ
-- data/language_language.ml 言語定義のパーサからコールバックを省いたもの
-- test/rule\_parsing\_test.ml 言語定義パーサのテスト
+- test/calc_test.ml 言語定義パーサのテスト
 - Makefile メイクファイル
 - README.md このファイル
 
