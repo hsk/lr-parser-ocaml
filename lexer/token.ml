@@ -2,8 +2,6 @@ type token = string (* トークン名 *)
 type any = string
 type tokenizedInput = token * any (* トークン名と、字句規則にマッチした元々の入力 *)
 
-let show (t:token):string = t
-
 type ptn = Str of string | Reg of string (* パターン *)
 type lexCallback = (any * any) -> any (* 字句規則マッチ時に呼び出されるコールバック *)
 type lexRule = token * ptn * int * lexCallback option (* 単一の字句ルール *)

@@ -23,7 +23,7 @@ type parsingTable = (Token.token * op) list list
 type parserCallback = grammarDefinition -> (int * any list) -> any
 
 let show1(p: (Token.token * op) list):string =
-  show_ls (List.map (fun(t,op)->Token.show t ^ " -> " ^ show_op op) p)
+  show_ls (List.map (fun(t,op)->t ^ " -> " ^ show_op op) p)
 
 let show (p:parsingTable) = show_ls (List.map show1 p)
 

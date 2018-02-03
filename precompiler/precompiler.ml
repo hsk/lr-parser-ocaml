@@ -16,9 +16,7 @@ let exec_parsing_table parsing_table = run (fun out1 ->
   out "let parsing_table:parsingTable = [";
     parsing_table |> List.iter(fun p ->
       o "  [";
-      p |> List.iter(fun (t, op) ->
-        o "%S, %s;" (Token.show t) (show_op op)
-      );
+      p |> List.iter(fun (t, op) -> o "%S, %s;" t (show_op op));
       out "];"
     );
     out "]\n"
