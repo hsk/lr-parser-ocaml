@@ -3,20 +3,20 @@ open Language
 
 (* 構文解析器の実行する命令群 *)
 type op =
+  | Accept
   | Shift of int
   | Reduce of int
-  | Conflict of int list * int list (* Shift/Reduceコンフリクト *)
-  | Accept
   | Goto of int
+  | Conflict of int list * int list (* Shift/Reduceコンフリクト *)
 
 let show_ls ls = "[" ^ String.concat "," ls ^ "]"
 let show_ints ls =show_ls (List.map string_of_int ls)
 let show_op = function
+  | Accept -> Printf.sprintf "Accept"
   | Shift(i) -> Printf.sprintf "Shift(%d)" i
   | Reduce(i) -> Printf.sprintf "Reduce(%d)" i
-  | Conflict(l,r) -> Printf.sprintf "Conflict(%s,%s)" (show_ints l) (show_ints r)
-  | Accept -> Printf.sprintf "Accept"
   | Goto(i) -> Printf.sprintf "Goto(%d)" i
+  | Conflict(l,r) -> Printf.sprintf "Conflict(%s,%s)" (show_ints l) (show_ints r)
 
 (* 構文解析表 *)
 type parsingTable = (Token.token * op) list list
@@ -35,28 +35,29 @@ let rec drop = function
   | (n, acc, a :: res) -> drop (n - 1, a::acc, res)
   | _ -> failwith "stack is empty"
 
+let rec pop2 num stack = drop (num,[], stack)
+let rec pop num stack = let (_,stack) = pop2 num stack in stack
+
 (* 構文解析ステートマシン *)
 (* states 現在読んでいる構文解析表の状態番号を置くスタック *)
 (* results 解析中のASTノードを置くスタック *)
-let rec actions parser inputs states results = 
+let rec automaton parser inputs states results = 
   match (parser, states, inputs) with
   | (_, _, []) -> ("", results)
   | ((grammar,parsingtable,callback), state::_, (token,value)::inp) ->
     begin try match List.assoc token (List.nth parsingtable state) with
     | Accept -> ("", results) (* 完了 *)
-    | Shift(to1) -> actions parser inp (to1 :: states) (value :: results)
+    | Shift(to1) -> automaton parser inp (to1 :: states) (value :: results)
     | Reduce(grammar_id) ->
-      let (ltoken,pattern,_) = List.nth grammar(grammar_id) in
+      let (ltoken,pattern,_) = List.nth grammar grammar_id in
       let rnum = List.length pattern in
-      (* 右辺の記号の数だけポップ *)
-      let (children, results2) = drop (rnum, [], results) in
-      let child = callback(grammar_id, children) in
-      (* 対応する規則の右辺の記号の数だけポップ *)
-      let (_,((state2::_) as states2)) = drop (rnum, [], states) in
+      let (children, results) = pop2 rnum results in (* 右辺の記号の数だけポップ *)
+      let ((state::_) as states) = pop rnum states in (* 対応する規則の右辺の記号の数だけポップ *)
+      let child = callback(grammar_id, children) in (* callback 実行 *)
       (* 次は必ず Goto *)
-      begin match List.assoc ltoken (List.nth parsingtable state2) with
-      | Goto(to1) -> actions parser inputs (to1 :: states2) (child :: results2)
-      | _ -> ("parse failed: goto operation expected after reduce operation", child :: results2)
+      begin match List.assoc ltoken (List.nth parsingtable state) with
+      | Goto(to1) -> automaton parser inputs (to1 :: states) (child :: results)
+      | _ -> ("parse failed: goto operation expected after reduce operation", child :: results)
       end
     | Conflict(shift_to, reduce_grammar) ->
       let err = Buffer.create 80 in
@@ -78,7 +79,7 @@ let rec actions parser inputs states results =
     end
 
 let parse grammar parsingtable callback (lexer:lexer) input =
-  let (error,result_stack) = actions (grammar,parsingtable,callback) (lexer input) [0] [] in
+  let (error,result_stack) = automaton (grammar,parsingtable,callback) (lexer input) [0] [] in
   if error <> "" then Printf.printf "%s\nparse failed.\n" error;
   if List.length result_stack <> 1 then Printf.printf "failed to construct tree.\n";
   List.nth result_stack 0
