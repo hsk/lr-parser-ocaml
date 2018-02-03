@@ -40,10 +40,10 @@ let exec(input: string): string = run (fun out1 ->
   out "open Parser";
   out "let language = language(";
   out "  [";
-  language.lex |> List.iter (fun (token,pattern,_,_) ->
+  language.lex |> List.iter (fun (token,pattern,_) ->
     match pattern with
-    | Reg(reg) -> out "\t\t%S, Reg %S;" token reg
-    | Str(str) -> out "\t\t%S, Str %S;" token str
+    | Reg(reg) -> out "\t\t%S, Reg %S,None;" token reg
+    | Str(str) -> out "\t\t%S, Str %S,None;" token str
   );
   out "  ],[";
   language.grammar |>List.iter(fun(ltoken,ptn,_) ->

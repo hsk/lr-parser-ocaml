@@ -3,27 +3,27 @@ open Token
 open Parser
 
 let lex: lexDefinition = [
-  "EXCLAMATION", Str("!"),0,None;
-  "VBAR", Str("|"),0,None;
-  "DOLLAR", Str("$"),0,None;
-  "COLON", Str(":"),0,None;
-  "SEMICOLON", Str(";"),0,None;
-  "LABEL", Reg("[a-zA-Z_][a-zA-Z0-9_]*"),0,None;
-  "REGEXP", Reg("\\/.*\\/[gimuy]*"), 0, Some(fun(v,_) ->
-      let tmp = Str.split (Str.regexp "/") v in
-      let flags = if String.sub v (String.length v - 1) 1 = "/" then ""
-        else List.nth tmp ((List.length tmp) - 1) in
-      let p = String.sub v 1 ((String.length v) - 2 - (String.length flags)) in
-      let p = Str.global_replace (Str.regexp "\\\\r") "\r" p in
-      let p = Str.global_replace (Str.regexp "\\\\n") "\n" p in
-      let p = Str.global_replace (Str.regexp "\\\\t") "\t" p in
-      (if flags="" then "" else "(?" ^ flags ^ ")") ^ p
-    );
-  "STRING", Reg("\".*\""), 0,Some(fun(v,_) -> String.sub v 1 (String.length v-2));
-  "STRING", Reg("'.*'"), 0,Some(fun(v,_) -> String.sub v 1 (String.length v-2));
-  "", Reg("\\(\r\n\\|\r\\|\n\\)+"),0,None;
-  "", Reg("[ \t]+"),0,None;
-  "INVALID", Reg("."),0,None;
+  "EXCLAMATION",Str"!",None;
+  "VBAR",       Str"|",None;
+  "DOLLAR",     Str"$",None;
+  "COLON",      Str":",None;
+  "SEMICOLON",  Str";",None;
+  "LABEL",      Reg"[a-zA-Z_][a-zA-Z0-9_]*",None;
+  "REGEXP",     Reg"\\/.*\\/[gimuy]*",      Some(fun(v,_) ->
+    let tmp = Str.split (Str.regexp "/") v in
+    let flags = if String.sub v (String.length v - 1) 1 = "/" then ""
+      else List.nth tmp ((List.length tmp) - 1) in
+    let p = String.sub v 1 ((String.length v) - 2 - (String.length flags)) in
+    let p = Str.global_replace (Str.regexp "\\\\r") "\r" p in
+    let p = Str.global_replace (Str.regexp "\\\\n") "\n" p in
+    let p = Str.global_replace (Str.regexp "\\\\t") "\t" p in
+    (if flags="" then "" else "(?" ^ flags ^ ")") ^ p
+  );
+  "STRING", Reg"\".*\"",               Some(fun(v,_) -> String.sub v 1 (String.length v-2));
+  "STRING", Reg"'.*'",                 Some(fun(v,_) -> String.sub v 1 (String.length v-2));
+  "",       Reg"\\(\r\n\\|\r\\|\n\\)+",None;
+  "",       Reg"[ \t]+",               None;
+  "INVALID",Reg".",                    None;
 ]
 
 type grammar = Grammar of token * grammarDefinition
@@ -45,7 +45,7 @@ let grammar: grammarDefinition = [
   );
   "LEX", ["LEXSECT"], Some(fun ([c0], _) -> Obj.magic [(Obj.magic c0:lexRule)]);
   "LEXSECT", ["LEXLABEL";"LEXDEF"], Some(fun ([c0;c1], _) ->
-    Obj.magic ((Obj.magic c0 : token), (Obj.magic c1 : ptn),0,None)
+    Obj.magic ((Obj.magic c0 : token), (Obj.magic c1 : ptn),None)
   );
   "LEXLABEL", ["LABEL"], Some(fun ([c0], _) -> c0);
   "LEXLABEL", ["EXCLAMATION"], Some(fun (_,_) -> "");

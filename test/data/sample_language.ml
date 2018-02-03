@@ -12,13 +12,13 @@ let test_sample_grammar: grammarDefinition = [
   "HOGE", ["ID"], None;
 ]
 let test_sample_lex: lexDefinition = [
-  "ATOM",      Str("x"),0,None;
-  "ID",        Reg("[a-zA-Z_][a-zA-Z0-9_]*"),0,None;
-  "SEMICOLON", Str(";"),0,None;
-  "SEPARATE",  Str("|"),0,None;
-  "", Reg("(\\r\\n|\\r|\\n)+"),0,None;
-  "", Reg("[ \\f\\t]+"),0,None;
-  "INVALID",   Reg("."),0,None;
+  "ATOM",      Str("x"),None;
+  "ID",        Reg("[a-zA-Z_][a-zA-Z0-9_]*"),None;
+  "SEMICOLON", Str(";"),None;
+  "SEPARATE",  Str("|"),None;
+  "", Reg("(\\r\\n|\\r|\\n)+"),None;
+  "", Reg("[ \\f\\t]+"),None;
+  "INVALID",   Reg("."),None;
 ]
 
 let test_sample_language = {lex=test_sample_lex; grammar=test_sample_grammar; start="S"}
@@ -35,14 +35,14 @@ let test_calc_grammar: grammarDefinition = [
 ]
 
 let test_calc_lex: lexDefinition = [
-  "DIGITS", Reg("[1-9][0-9]*"),0,None;
-  "PLUS", Str("+"),0,None;
-  "ASTERISK", Str("*"),0,None;
-  "LPAREN", Str("("),0,None;
-  "RPAREN", Str(")"),0,None;
-  "", Reg("(\\r\\n|\\r|\\n)+"),0,None;
-  "", Reg("[ \\f\\t]+"),0,None;
-  "INVALID", Reg("."),0,None;
+  "DIGITS",   Reg("[1-9][0-9]*"),      None;
+  "PLUS",     Str("+"),                None;
+  "ASTERISK", Str("*"),                None;
+  "LPAREN",   Str("("),                None;
+  "RPAREN",   Str(")"),                None;
+  "",         Reg("(\\r\\n|\\r|\\n)+"),None;
+  "",         Reg("[ \\f\\t]+"),       None;
+  "INVALID",  Reg("."),                None;
 ]
 
 let test_calc_language = {lex=test_calc_lex;grammar=test_calc_grammar;start="EXP"}

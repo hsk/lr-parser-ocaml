@@ -24,14 +24,14 @@ let test_broken_grammar: grammarDefinition = [
 ]
 
 let test_broken_lex: lexDefinition = [
-  "DIGITS", Reg("[1-9][0-9]*"),0,None;
-  "PLUS", Str("+"),0,None;
-  "ASTERISK", Str("*"),0,None;
-  "LPAREN", Str("("),0,None;
-  "RPAREN", Str(")"),0,None;
-  "", Reg("\\(\r\n\\|\r\\|\n\\)+"),0,None;
-  "", Reg("[ \t]+"),0,None;
-  "INVALID", Reg("."),0,None;
+  "DIGITS",  Reg"[1-9][0-9]*",          None;
+  "PLUS",    Str"+",                    None;
+  "ASTERISK",Str"*",                    None;
+  "LPAREN",  Str"(",                    None;
+  "RPAREN",  Str")",                    None;
+  "",        Reg"\\(\r\n\\|\r\\|\n\\)+",None;
+  "",        Reg"[ \t]+",               None;
+  "INVALID", Reg".",                    None;
 ]
 
 let test_broken_language = language(test_broken_lex, test_broken_grammar, "EXP")

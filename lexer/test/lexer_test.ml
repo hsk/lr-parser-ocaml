@@ -3,13 +3,13 @@ open Token
 open Lexer
 
 let test_sample_lex: lexDefinition = [
-  "ATOM",      Str("x"),0,None;
-  "ID",        Reg("[a-zA-Z_][a-zA-Z0-9_]*"),0,None;
-  "SEMICOLON", Str(";"),0,None;
-  "SEPARATE",  Str("|"),0,None;
-  "", Reg("(\\r\\n|\\r|\\n)+"),0,None;
-  "", Reg("[ \\f\\t]+"),0,None;
-  "INVALID",   Reg("."),0,None;
+  "ATOM",      Str("x"),                     None;
+  "ID",        Reg("[a-zA-Z_][a-zA-Z0-9_]*"),None;
+  "SEMICOLON", Str(";"),                     None;
+  "SEPARATE",  Str("|"),                     None;
+  "",          Reg("(\\r\\n|\\r|\\n)+"),     None;
+  "",          Reg("[ \\f\\t]+"),            None;
+  "INVALID",   Reg("."),                     None;
 ]
 
 let test () =
@@ -46,10 +46,10 @@ let test () =
     end;
     "skip string pattern if the following is \\\\w" >:: begin fun () ->
       let lexer = create [
-        "STR", Str("abc"),0,None;
-        "REGEXP", Reg("abc"),0,None;
-        "ASTERISK", Str("*"),0,None;
-        "XYZ", Str("xyz"),0,None;
+        "STR",      Str("abc"), None;
+        "REGEXP",   Reg("abc"), None;
+        "ASTERISK", Str("*"),   None;
+        "XYZ",      Str("xyz"), None;
       ] in
       assert_equal ~printer:Lexer.show (lexer "abcxyz*abc*xyz*abcabc") [
         "REGEXP","abc";
@@ -66,37 +66,36 @@ let test () =
     end;
     "rule priority" >:: begin fun () ->
       let lexer = create [
-        "PM", Str("+-"),0,None;
-        "PMA", Str("+-*"),0,None;
-        "ASTERISK", Str("*"), 1,None;
-        "ABC", Reg("abc"),0,None;
-        "ABCD", Reg("abcd"),0,None;
-        "ABCD2", Str("abcd"),2,None;
-        "D", Reg("d"),0,None;
-        "XYZ", Reg("xyz"),0,None;
-        "XYZW", Reg("xyzw"), -1, None;
-        "W", Str("w"),0,None;
-        "", Str(" "),0,None;
+        "ABCD2",    Str("abcd"),None;
+        "ASTERISK", Str("*"),   None;
+        "PM",       Str("+-"),  None;
+        "PMA",      Str("+-*"), None;
+        "ABC",      Reg("abc"), None;
+        "ABCD",     Reg("abcd"),None;
+        "D",        Reg("d"),   None;
+        "XYZ",      Reg("xyz"), None;
+        "W",        Str("w"),   None;
+        "",         Str(" "),   None;
+        "XYZW",     Reg("xyzw"),None;
       ] in
       assert_equal ~printer:Lexer.show (lexer " +-+-*abcd xyzw") [
         "PM","+-";
         "PMA","+-*";
         "ABCD2","abcd";
-        "XYZ","xyz";
-        "W","w";
+        "XYZW","xyzw";
         "EOF","";
       ]
     end;
     "longest match" >:: begin fun () ->
       let lexer = create [
-        "PM", Str("+-"),0,None;
-        "PMA", Str("+-*"),0,None;
-        "ASTERISK", Str("*"),0,None;
-        "ABC", Reg("abc"),0,None;
-        "ABCD", Reg("abcd"),0,None;
-        "ABCD2", Reg("abcd"),0,None;
-        "D", Reg("d"),0,None;
-        "", Str(" "),0,None;
+        "PM",       Str("+-"),  None;
+        "PMA",      Str("+-*"), None;
+        "ASTERISK", Str("*"),   None;
+        "ABC",      Reg("abc"), None;
+        "ABCD",     Reg("abcd"),None;
+        "ABCD2",    Reg("abcd"),None;
+        "D",        Reg("d"),   None;
+        "",         Str(" "),   None;
       ] in
       assert_equal ~printer:Lexer.show (lexer " +-+-*abcd ") [
         "PM", "+-";
@@ -107,9 +106,9 @@ let test () =
     end;
     "add rule and exec again after reset 1" >:: begin fun () ->
       let lexer = create [
-        "ASTERISK", Str("*"),0,None;
-        "ABC", Reg("abc"),0,None;
-        "", Str(" "),0,None;
+        "ASTERISK", Str("*"),  None;
+        "ABC",      Reg("abc"),None;
+        "",         Str(" "),  None;
       ] in
       assert_equal ~printer:Lexer.show (lexer " *abc* ") [
         "ASTERISK", "*";
@@ -120,10 +119,10 @@ let test () =
     end;
     "add rule and exec again after reset 2" >:: begin fun () ->
       let lexer = create [
-        "ASTERISK", Str("*"),0,None;
-        "ABC", Reg("abc"),0,None;
-        "", Str(" "),0,None;
-        "ABCAST", Reg("abc\\*"), 1,None;
+        "ABCAST",   Reg("abc\\*"), None;
+        "ASTERISK", Str("*"),      None;
+        "ABC",      Reg("abc"),    None;
+        "",         Str(" "),      None;
       ] in
       assert_equal ~printer:Lexer.show (lexer " *abc* ") [
         "ASTERISK", "*";
@@ -133,11 +132,11 @@ let test () =
     end;
     "add rule and exec again after reset 3" >:: begin fun () ->
       let lexer = create [
-        "ASTERISK", Str("*"),0,None;
-        "ABC", Reg("abc"),0,None;
-        "", Str(" "),0,None;
-        "ABCAST", Reg("abc\\*"), 1,None;
-        "ABCAST", Reg("abc\\*"), 1,None;
+        "ASTERISK", Str("*"),     None;
+        "ABC",      Reg("abc"),   None;
+        "",         Str(" "),     None;
+        "ABCAST",   Reg("abc\\*"),None;
+        "ABCAST",   Reg("abc\\*"),None;
       ] in
       assert_equal ~printer:Lexer.show (lexer " *abc* ") [
         "ASTERISK", "*";
@@ -153,19 +152,15 @@ let test () =
     "custom callback (without CallbackController)" >:: begin fun () ->
       (* デフォルトの挙動がこれでいいのか不明 *)
       let lexer = create [
-        "ERROR", Str("x"),0, Some (fun(a,b) ->
-          failwith("custom callback")
-        );
-        "", Str(" "),0,None;
+        "ERROR", Str("x"), Some (fun(a,b) -> failwith("custom callback"));
+        "",      Str(" "), None;
       ] in
       assert_raises (Failure "custom callback") (fun () ->lexer " x ")
     end;
     "custom callback (set CallbackController)" >:: begin fun () ->
       let lexer = create [
-        "ERROR", Str("x"),0, Some(fun (a,_) ->
-          failwith("custom callback")
-        );
-        "", Str(" "),0,None;
+        "ERROR", Str("x"),Some(fun (a,_) -> failwith("custom callback"));
+        "",      Str(" "),None;
       ] in
       assert_raises (Failure "custom callback") (fun () ->lexer " x ")
     end;

@@ -4,14 +4,14 @@ open Language
 open Parser
 
 let lex: lexDefinition = [
-  "",         Reg("(\\r\\n|\\r|\\n)+"),0,None;
-  "",         Reg("[ \\f\\t]+"),0,None;
-  "DIGITS",   Reg("[1-9][0-9]*"),0,None;
-  "PLUS",     Str("+"),0,None;
-  "ASTERISK", Str("*"),0,None;
-  "LPAREN",   Str("("),0,None;
-  "RPAREN",   Str(")"),0,None;
-  "INVALID",  Reg("."),0,None;
+  "",         Reg("(\\r\\n|\\r|\\n)+"),None;
+  "",         Reg("[ \\f\\t]+"),       None;
+  "DIGITS",   Reg("[1-9][0-9]*"),      None;
+  "PLUS",     Str("+"),                None;
+  "ASTERISK", Str("*"),                None;
+  "LPAREN",   Str("("),                None;
+  "RPAREN",   Str(")"),                None;
+  "INVALID",  Reg("."),                None;
 ]
 
 let grammar: grammarDefinition = [
