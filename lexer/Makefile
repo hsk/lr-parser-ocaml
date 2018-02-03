@@ -1,9 +1,5 @@
 all:
-	ocamlfind ocamlc -o test1 -package oUnit -package str -linkpkg -g \
-		-w -31-8 \
-		token.ml lexer.ml \
-		-I test test/lexer_test.ml \
-
+	ocamlfind ocamlc -o test1 -package oUnit -package str -linkpkg -g -w -31-8 token.ml lexer.ml -I test test/lexer_test.ml
 	./test1
 	make clean
 clean:
