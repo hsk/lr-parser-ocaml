@@ -8,14 +8,11 @@ LR構文解析器は、構文解析表と字句解析器を受け取って構文
 
 - language.ml 言語定義
 - parser.ml LR構文解析器
-- ast.ml ASTノードを自動生成するパーサの生成
 - data/rule_parser.ml 言語定義のパーサ
 - data/language_language.ml 言語定義のパーサからコールバックを省いたもの
 - test/rule\_parsing\_test.ml 言語定義パーサのテスト
 - Makefile メイクファイル
 - README.md このファイル
-
-ast.ml ファイルは便利ライブラリなので特に無くても困りません。
 
 LR構文解析のアルゴリズムは構文解析表を元にオートマトンを実行するだけなので簡単です。
 パーサの行数は100行未満で出来ています。

@@ -1,13 +1,9 @@
 all:
-	ocamlfind ocamlc -o ./test1 -package oUnit -package str -linkpkg -g \
-		-w -31-8 \
+	ocamlfind ocamlc -o ./parser_test -package oUnit -package str -linkpkg -g -w -31-8 \
 		-I ../lexer ../lexer/token.ml ../lexer/lexer.ml \
-		-I ../lexer/test ../lexer/test/lexer_test.ml \
-		language.ml parser.ml \
-		-I data data/language_language.ml data/rule_parser.ml \
-		-I test test/rule_parsing_test.ml \
+		language.ml parser.ml -I test test/calc_test.ml
 
-	cd ../ ; ./parser/test1
+	cd ../ ; ./parser/parser_test
 	make clean
 clean:
-	rm -rf ../lexer/*.cm* ../lexer/test/*.cm* *.cm* data/*.cm* test/*.cm* test1 *.cache
+	rm -rf ../lexer/*.cm* ../lexer/test/*.cm* *.cm* data/*.cm* test/*.cm* parser_test *.cache

@@ -13,7 +13,6 @@ let _ =
     Closureset_test.test ();
     Closureset_test.test2 ();
     Parser_test.test ();
-    Parser_test.test2 ();
     Broken_language_test.test ();
     Language_parsing_test.test ();
   ])
