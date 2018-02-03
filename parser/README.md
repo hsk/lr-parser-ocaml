@@ -25,20 +25,9 @@ LR構文解析の難しいところはそのオートマトンの動きの理解
 
 ## 構文解析器の動作
 
-オートマトンのプログラムの最初の部分を見てみましょう:
+LR構文解析の構文解析器は単純なオートマトンとして実装できます。
 
-```
-let rec automaton parser inputs states results = 
-  match (parser, states, inputs) with
-  | (_, _, []) -> ("", results)
-  | ((grammar,parsingtable,callback), state::_, (token,value)::inp) ->
-    begin try match List.assoc token (List.nth parsingtable state) with
-```
-
-オートマトンはパーサと入力リストと状態スタックと結果スタックを持ちます。
-入力リストがなくなれば結果を返します。
-パーサの中身はさらに文法と構文解析表とコールバックが含まれています。
-ワンステップごとの動作は状態スタックのトップと入力のトップを見て構文解析表のステートとトークンに対応する命令を取り出して実行します。
+オートマトンには5つの命令があります:
 
 ```
 type op =
@@ -49,9 +38,26 @@ type op =
   | Conflict of int list * int list (* Shift/Reduceコンフリクト *)
 ```
 
-オートマトンの命令は5つあります。Acceptは解析終了を、Shiftはシフト動作を、Reduceは還元動作を、Gotoは常態の遷移を、Conflictはパーサがコンフリクトを起こした場合の動作を実行します。
+Acceptは解析終了を、Shiftはシフト動作を、Reduceは還元動作を、Gotoは状態の遷移を、Conflictはパーサがコンフリクトを起こした場合の動作を実行します。
+シフトは要は関数呼び出しで、リデュースは関数リターンのようなものです。
 
-Acceptのプログラムを見てみましょう:
+オートマトンのプログラムの最初の部分を見てみましょう:
+
+```
+let rec automaton parser inputs states results = 
+  match (parser, states, inputs) with
+  | (_, _, []) -> ("", results)
+  | ((grammar,parsingtable,callback), state::_, (token,value)::inp) ->
+    begin try match List.assoc token (List.nth parsingtable state) with
+```
+
+automaton は parserとinputs(入力リスト)とstates(状態スタック)とresults(結果スタック)を持ちます。
+まず、入力リストがなくなれば結果を返します。入力リストが残っていればその入力に従って何かしらの動作を行います。
+パーサの中身はさらにgrammar(文法)とparsingtable(構文解析表)とcallbackが含まれています。
+
+ワンステップごとの動作は状態スタックのトップと入力のトップを見て構文解析表のステートとトークンに対応する命令を取り出して実行します。
+
+Accept場合は:
 
 ```
     | Accept -> ("", results) (* 完了 *)
@@ -59,7 +65,7 @@ Acceptのプログラムを見てみましょう:
 
 本当に何もしません。結果を返すだけです。
 
-Shiftのプログラムも、とても簡単です:
+Shiftも、とても簡単です:
 
 ```
     | Shift(to1) -> automaton parser inp (to1 :: states) (value :: results)
@@ -83,8 +89,8 @@ Reduceの動作が一番複雑です:
       end
 ```
 
-とはいえそんなに長くはありません。文法番号がパラメータにあるのでそこから文法を取り出してパターン数を取得します。
-その長さだけ、結果およびステータススタックからポップします。ステータスのスタックは捨てちゃいますが、結果のスタック内容は必要なのでまとめておいてコールバックを呼び出して結果スタックに積みます。
+とはいえそんなに長くはありません。grammar_id文法番号がパラメータにあるのでそこから文法を取り出してパターン数を取得します。
+その長さだけ、結果およびステータススタックからポップします。ステータスのスタックは捨てちゃいますが、結果のスタック内容はまとめてコールバックを呼び出し結果を結果スタックに積みなおします。
 リデュースしたあとは必ずgoto命令があるはずなのでパーサテーブルのステート番号の命令を取り出して、
 ステータススタックに飛び先を設定します。
 
