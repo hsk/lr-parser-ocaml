@@ -20,6 +20,7 @@ let show_op = function
 
 (* 構文解析表 *)
 type parsingTable = (Token.token * op) list list
+type parserCallback = grammarDefinition -> (int * any list) -> any
 
 let show1(p: (Token.token * op) list):string =
   show_ls (List.map (fun(t,op)->Token.show t ^ " -> " ^ show_op op) p)
@@ -27,7 +28,7 @@ let show1(p: (Token.token * op) list):string =
 let show (p:parsingTable) = show_ls (List.map show1 p)
 
 (* 構文解析器 *)
-type parser = (Language.grammarDefinition * parsingTable * callbackController)
+type parser = (grammarDefinition * parsingTable * parserCallback)
 
 let rec drop = function
   | (0, acc, res) -> (acc, res)
@@ -40,7 +41,7 @@ let rec drop = function
 let rec actions parser inputs states results = 
   match (parser, states, inputs) with
   | (_, _, []) -> ("", results)
-  | ((grammar,parsingtable,controller), state::_, (token,value)::inp) ->
+  | ((grammar,parsingtable,callback), state::_, (token,value)::inp) ->
     begin try match List.assoc token (List.nth parsingtable state) with
     | Accept -> ("", results) (* 完了 *)
     | Shift(to1) -> actions parser inp (to1 :: states) (value :: results)
@@ -49,7 +50,7 @@ let rec actions parser inputs states results =
       let rnum = List.length pattern in
       (* 右辺の記号の数だけポップ *)
       let (children, results2) = drop (rnum, [], results) in
-      let child = controller.callGrammar(grammar_id, children) in
+      let child = callback(grammar_id, children) in
       (* 対応する規則の右辺の記号の数だけポップ *)
       let (_,((state2::_) as states2)) = drop (rnum, [], states) in
       (* 次は必ず Goto *)
@@ -76,13 +77,16 @@ let rec actions parser inputs states results =
       (Printf.sprintf "parse failed: unexpected token:%s state: %d" token state, results) (* 未定義 *)
     end
 
-let parse parser lexer input =
-  let (error,result_stack) = actions parser (lexer input) [0] [] in
+let parse grammar parsingtable callback (lexer:lexer) input =
+  let (error,result_stack) = actions (grammar,parsingtable,callback) (lexer input) [0] [] in
   if error <> "" then Printf.printf "%s\nparse failed.\n" error;
   if List.length result_stack <> 1 then Printf.printf "failed to construct tree.\n";
   List.nth result_stack 0
 
 (* Parserを生成するためのファクトリ *)
-
-let create language parsingtable =
-  (getGrammar language, parsingtable, makeDefaultConstructor language)
+let create grammar parsingtable =
+  parse grammar parsingtable (fun (id, children) ->
+    match List.nth grammar id with
+    | (ltoken,_,Some(callback)) -> callback(children, ltoken)
+    | _ -> List.nth children 0
+  )

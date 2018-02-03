@@ -8,7 +8,7 @@ open Parsergenerator
 
 let test () =
   let parsingtable = generateParsingTable test_calc_language in
-  let parser = Ast.createParser test_calc_language parsingtable in
+  let parser = Ast.createParser test_calc_language.grammar parsingtable in
   "parser test" >::: [
     "parser factory" >:: begin fun () ->
       (*Printf.printf "%s\n%!" (Parser.show(parsingtable));*)
@@ -16,9 +16,9 @@ let test () =
       )(Parser.show(parsingtable));
     end;
     "getting calc language ast" >:: begin fun () ->
-      (*let (ast : ast) = Obj.magic(parse parser (getLexer test_calc_language) "1") in
+      (*let (ast : ast) = Obj.magic(parser (test_calc_language.lex) "1") in
       Printf.printf "ast=%s\n%!" (Callback.show ast);*)
-      assert(Obj.magic(parse parser (Ast.createLex test_calc_language) "1+1") =
+      assert(Obj.magic(parser (Ast.createLex test_calc_language.lex) "1+1") =
         ASTNode("EXP", "",
           [
             ASTNode("EXP", "", [
@@ -33,14 +33,14 @@ let test () =
       )
     end;
     "invalid input" >:: begin fun () ->
-      assert(Obj.magic(parse parser (Ast.createLex test_calc_language) "1zzz") = ASTNode("DIGITS", "1", []))
+      assert(Obj.magic(parser (Ast.createLex test_calc_language.lex) "1zzz") = ASTNode("DIGITS", "1", []))
     end;
   ]
 let test2 () =
   "test grammar input with callback" >::: [
     "custom callback in grammar" >:: begin fun () ->
       let parsing_table = generateParsingTable test_calc_language in
-      let parser = Parser.create test_calc_language parsing_table in
-      assert(Obj.magic(parse parser (Lexer.create test_calc_language) "2*(3+4)") = 14)
+      let parser = Parser.create test_calc_language.grammar parsing_table in
+      assert(Obj.magic(parser (Lexer.create test_calc_language.lex) "2*(3+4)") = 14)
     end;
   ]

@@ -113,7 +113,7 @@ let rule_parsing_table: parsingTable = [
 ]
 
 (* 言語定義ファイルを読み込むための構文解析器 *)
-let rule_parser = create rule_language rule_parsing_table
+let rule_parse = Parser.create rule_language.grammar rule_parsing_table
 
 let read filename =
   let lines = ref [] in

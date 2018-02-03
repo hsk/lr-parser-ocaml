@@ -4,6 +4,12 @@ type tokenizedInput = token * any (* トークン名と、字句規則にマッ�
 
 let show (t:token):string = t
 
+type ptn = Str of string | Reg of string (* パターン *)
+type lexCallback = (any * any) -> any (* 字句規則マッチ時に呼び出されるコールバック *)
+type lexRule = token * ptn * int * lexCallback option (* 単一の字句ルール *)
+type lexDefinition = lexRule list(* 字句規則 *)
+type lexer = string -> tokenizedInput list
+
 module S = Set.Make(struct
   type t=token
   let compare=String.compare

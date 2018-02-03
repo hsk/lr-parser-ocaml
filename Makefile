@@ -1,9 +1,9 @@
 all:
 	ocamlfind ocamlc -o test1 -package oUnit -package str -linkpkg -g \
 		-w -31-8 \
-		-I lexer lexer/token.ml lexer/language.ml lexer/lexer.ml \
+		-I lexer lexer/token.ml lexer/lexer.ml \
 		-I lexer/test lexer/test/lexer_test.ml \
-		-I parser parser/parser.ml \
+		-I parser parser/language.ml parser/parser.ml \
 		-I parser/data parser/data/ruleparser.ml parser/data/language_language.ml \
 		-I parser/test parser/test/rule_parsing_test.ml \
 		-I yacc yacc/nullableset.ml yacc/symboldiscriminator.ml yacc/firstset.ml \
@@ -31,7 +31,7 @@ all:
 
 clean:
 	rm -rf *.cm* lexer/*.cm* lexer/data/*.cm* lexer/test/*.cm* \
-	parser/*.cm* parser/data/*.cm* parser/test/*.cm \
+	parser/*.cm* parser/data/*.cm* parser/test/*.cm* \
 	precompiler/*.cm* yacc/*.cm* \
 	test/*.cm* test/data/*.cm* test/parser/*.cm* test/precompiler/*.cm* test/yacc/*.cm*
 clean2:

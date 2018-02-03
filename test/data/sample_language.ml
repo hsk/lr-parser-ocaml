@@ -1,3 +1,4 @@
+open Token
 open Language
 
 let test_sample_grammar: grammarDefinition = [

@@ -1,3 +1,4 @@
+open Token
 open Language
 let lex: lexDefinition = [
   "EXCLAMATION", Str("!"),0,None;
