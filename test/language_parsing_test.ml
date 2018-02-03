@@ -1,4 +1,5 @@
 open OUnit
+open Language
 open Ruleparser
 open Parsergenerator
 open Parser

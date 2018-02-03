@@ -1,5 +1,6 @@
 open OUnit
 open Token
+open Language
 open Firstset
 open Symboldiscriminator
 open Sample_language

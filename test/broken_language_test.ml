@@ -16,7 +16,7 @@ let test () =
     (* TODO: パーサが壊れていることを(コンソール出力以外で)知る方法 *)
     "parsing table is broken" >:: begin fun () ->
       let table = generateParsingTable test_broken_language in
-      let parser = Parser.create test_broken_language.grammar table in
+      let _ = Parser.create test_broken_language.grammar table in
       assert_equal (isConflicted()) true;
       assert_equal !table_type "CONFLICTED";
     end;

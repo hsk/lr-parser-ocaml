@@ -31,49 +31,49 @@ type sect = grammar
 type sectLabel = SectLabel of token * string
 
 let grammar: grammarDefinition = [
-  "LANGUAGE", ["LEX";"GRAMMAR"], Some(fun (c, _) ->
-    let Grammar(start_symbol,grammar) = Obj.magic (List.nth c 1) in
+  "LANGUAGE", ["LEX";"GRAMMAR"], Some(fun ([c0;c1], _) ->
+    let Grammar(start_symbol,grammar) = Obj.magic c1 in
     (* 開始記号の指定がない場合、最初の規則に設定] *)
     let start_symbol = match start_symbol,grammar with
     | "",(ltoken,_,_)::_ -> ltoken
     | s,_ -> s
     in
-    Obj.magic (language(Obj.magic(List.nth c 0), grammar, start_symbol))
+    Obj.magic (language(Obj.magic c0, grammar, start_symbol))
   );
-  "LEX", ["LEX";"LEXSECT"], Some(fun (c, _) ->
-    Obj.magic ((Obj.magic (List.nth c 0)) @ [(Obj.magic (List.nth c 1):lexRule)])
+  "LEX", ["LEX";"LEXSECT"], Some(fun ([c0;c1], _) ->
+    Obj.magic ((Obj.magic c0) @ [(Obj.magic c1:lexRule)])
   );
-  "LEX", ["LEXSECT"], Some(fun (c, _) -> Obj.magic [(Obj.magic (List.nth c 0):lexRule)]);
-  "LEXSECT", ["LEXLABEL";"LEXDEF"], Some(fun (c, _) ->
-    Obj.magic ((Obj.magic (List.nth c 0) : token), (Obj.magic (List.nth c 1) : ptn),0,None)
+  "LEX", ["LEXSECT"], Some(fun ([c0], _) -> Obj.magic [(Obj.magic c0:lexRule)]);
+  "LEXSECT", ["LEXLABEL";"LEXDEF"], Some(fun ([c0;c1], _) ->
+    Obj.magic ((Obj.magic c0 : token), (Obj.magic c1 : ptn),0,None)
   );
-  "LEXLABEL", ["LABEL"], Some(fun (c, _) -> List.nth c 0);
+  "LEXLABEL", ["LABEL"], Some(fun ([c0], _) -> c0);
   "LEXLABEL", ["EXCLAMATION"], Some(fun (_,_) -> "");
   "LEXLABEL", ["EXCLAMATION";"LABEL"], Some(fun (_,_) -> "");
-  "LEXDEF", ["STRING"], Some(fun (c, _) -> Obj.magic(Str(List.nth c 0)));
-  "LEXDEF", ["REGEXP"], Some(fun (c, _) -> Obj.magic(Reg(List.nth c 0)));
-  "GRAMMAR", ["SECT";"GRAMMAR"], Some(fun (c, _) ->
-    let Grammar(start_symbol0,sect) = (Obj.magic (List.nth c 0) : sect) in
-    let Grammar(start_symbol1,grammar) = (Obj.magic (List.nth c 1) : grammar) in
+  "LEXDEF", ["STRING"], Some(fun ([c0], _) -> Obj.magic(Str c0));
+  "LEXDEF", ["REGEXP"], Some(fun ([c0], _) -> Obj.magic(Reg c0));
+  "GRAMMAR", ["SECT";"GRAMMAR"], Some(fun ([c0;c1], _) ->
+    let Grammar(start_symbol0,sect) = (Obj.magic c0 : sect) in
+    let Grammar(start_symbol1,grammar) = (Obj.magic c1 : grammar) in
     let start_symbol = if start_symbol0 <> "" then start_symbol0 else start_symbol1 in
     Obj.magic (Grammar(start_symbol, sect @ grammar))
   );
-  "GRAMMAR", ["SECT"], Some(fun (c, _) -> Obj.magic(Obj.magic (List.nth c 0) : grammar));
-  "SECT", ["SECTLABEL";"COLON";"DEF";"SEMICOLON"], Some(fun (c, _) ->
-    let SectLabel(start_symbol,label) = (Obj.magic (List.nth c 0)) in
-    let result = (Obj.magic (List.nth c 2) : string list list) |> List.map(fun pt ->
+  "GRAMMAR", ["SECT"], Some(fun ([c0], _) -> Obj.magic(Obj.magic c0 : grammar));
+  "SECT", ["SECTLABEL";"COLON";"DEF";"SEMICOLON"], Some(fun ([c0;_;c2;_], _) ->
+    let SectLabel(start_symbol,label) = (Obj.magic c0) in
+    let result = (Obj.magic c2 : string list list) |> List.map(fun pt ->
       (label, pt, None)
     ) in
     Obj.magic(Grammar(start_symbol, result))
   );
-  "SECTLABEL", ["LABEL"], Some(fun (c, _) -> Obj.magic(SectLabel("", List.nth c 0)));
-  "SECTLABEL", ["DOLLAR";"LABEL"], Some(fun (c, _) -> Obj.magic(SectLabel(List.nth c 1, List.nth c 1)));
-  "DEF", ["PATTERN";"VBAR";"DEF"], Some(fun (c, _) -> Obj.magic((Obj.magic (List.nth c 0) : string list) :: (Obj.magic (List.nth c 2) : string list list)));
-  "DEF", ["PATTERN"], Some(fun (c, _) -> Obj.magic[(Obj.magic (List.nth c 0) : string list)]);
-  "PATTERN", ["SYMBOLLIST"], Some(fun(c,_)->(List.nth c 0));
+  "SECTLABEL", ["LABEL"], Some(fun ([c0], _) -> Obj.magic(SectLabel("", c0)));
+  "SECTLABEL", ["DOLLAR";"LABEL"], Some(fun ([_;c1], _) -> Obj.magic(SectLabel(c1, c1)));
+  "DEF", ["PATTERN";"VBAR";"DEF"], Some(fun ([c0;_;c2], _) -> Obj.magic((Obj.magic c0 : string list) :: (Obj.magic c2 : string list list)));
+  "DEF", ["PATTERN"], Some(fun ([c0], _) -> Obj.magic[(Obj.magic c0 : string list)]);
+  "PATTERN", ["SYMBOLLIST"], Some(fun([c0],_)->c0);
   "PATTERN", [], Some(fun (c, _) -> Obj.magic []);
-  "SYMBOLLIST", ["LABEL";"SYMBOLLIST"], Some(fun (c, _) -> Obj.magic((List.nth c 0) :: (Obj.magic (List.nth c 1) : string list)));
-  "SYMBOLLIST", ["LABEL"], Obj.magic(Some(fun (c, _) -> [(List.nth c 0)]));
+  "SYMBOLLIST", ["LABEL";"SYMBOLLIST"], Some(fun ([c0;c1], _) -> Obj.magic(c0 :: (Obj.magic c1 : string list)));
+  "SYMBOLLIST", ["LABEL"], Obj.magic(Some(fun ([c0], _) -> [c0]));
 ]
 
 (* 言語定義文法の言語定義 *)

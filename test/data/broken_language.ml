@@ -29,7 +29,7 @@ let test_broken_lex: lexDefinition = [
   "ASTERISK", Str("*"),0,None;
   "LPAREN", Str("("),0,None;
   "RPAREN", Str(")"),0,None;
-  "", Reg("\(\r\n\|\r\|\n\)+"),0,None;
+  "", Reg("\\(\r\n\\|\r\\|\n\\)+"),0,None;
   "", Reg("[ \t]+"),0,None;
   "INVALID", Reg("."),0,None;
 ]

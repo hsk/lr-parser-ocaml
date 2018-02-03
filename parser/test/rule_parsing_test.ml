@@ -1,6 +1,7 @@
 open OUnit
 open Ruleparser
 open Parser
+open Language
 open Language_language
 
 let test () =
