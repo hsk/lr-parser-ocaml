@@ -10,9 +10,6 @@ let test () =
   let lexer = Lexer.create test_broken_language.lex in
   let parser = Parser.create test_broken_language.grammar table lexer in
   "Calculator test with broken language" >::: [
-    "test" >:: begin fun () ->
-      assert_equal "a" "a"
-    end;
     (* TODO: パーサが壊れていることを(コンソール出力以外で)知る方法 *)
     "parsing table is broken" >:: begin fun () ->
       let table = generateParsingTable test_broken_language in

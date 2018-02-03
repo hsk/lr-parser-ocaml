@@ -53,12 +53,12 @@ let grammar: grammarDefinition = [
   "LEXDEF", ["STRING"], Some(fun ([c0], _) -> Obj.magic(Str c0));
   "LEXDEF", ["REGEXP"], Some(fun ([c0], _) -> Obj.magic(Reg c0));
   "GRAMMAR", ["SECT";"GRAMMAR"], Some(fun ([c0;c1], _) ->
-    let Grammar(start_symbol0,sect) = (Obj.magic c0 : sect) in
-    let Grammar(start_symbol1,grammar) = (Obj.magic c1 : grammar) in
+    let Grammar(start_symbol0,sect) = Obj.magic c0 in
+    let Grammar(start_symbol1,grammar) = Obj.magic c1 in
     let start_symbol = if start_symbol0 <> "" then start_symbol0 else start_symbol1 in
     Obj.magic (Grammar(start_symbol, sect @ grammar))
   );
-  "GRAMMAR", ["SECT"], Some(fun ([c0], _) -> Obj.magic(Obj.magic c0 : grammar));
+  "GRAMMAR", ["SECT"], Some(fun ([c0], _) -> c0);
   "SECT", ["SECTLABEL";"COLON";"DEF";"SEMICOLON"], Some(fun ([c0;_;c2;_], _) ->
     let SectLabel(start_symbol,label) = (Obj.magic c0) in
     let result = (Obj.magic c2 : string list list) |> List.map(fun pt ->

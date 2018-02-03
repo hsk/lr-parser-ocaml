@@ -1,5 +1,5 @@
 open OUnit
-open Ruleparser
+open Rule_parser
 open Parser
 open Language
 open Language_language

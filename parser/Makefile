@@ -4,7 +4,7 @@ all:
 		-I ../lexer ../lexer/token.ml ../lexer/lexer.ml \
 		-I ../lexer/test ../lexer/test/lexer_test.ml \
 		language.ml parser.ml \
-		-I data data/language_language.ml data/ruleparser.ml \
+		-I data data/language_language.ml data/rule_parser.ml \
 		-I test test/rule_parsing_test.ml \
 
 	cd ../ ; ./parser/test1

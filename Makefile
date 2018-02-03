@@ -4,7 +4,7 @@ all:
 		-I lexer lexer/token.ml lexer/lexer.ml \
 		-I lexer/test lexer/test/lexer_test.ml \
 		-I parser parser/language.ml parser/parser.ml \
-		-I parser/data parser/data/ruleparser.ml parser/data/language_language.ml \
+		-I parser/data parser/data/rule_parser.ml parser/data/language_language.ml \
 		-I parser/test parser/test/rule_parsing_test.ml \
 		-I yacc yacc/nullableset.ml yacc/symboldiscriminator.ml yacc/firstset.ml \
 		   yacc/grammardb.ml yacc/closureitem.ml yacc/closureset.ml \
