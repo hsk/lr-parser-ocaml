@@ -4,9 +4,9 @@ open Language
 open Parser
 
 let test () =
-  let parsing_table = Parsergenerator.generate Calc_language.language in
+  let ((_,parsing_table) as table) = Parsergenerator.generate Calc_language.language in
   let lexer = Lexer.create Calc_language.lex in
-  let parser = Parser.create Calc_language.grammar parsing_table lexer in
+  let parser = Parser.create Calc_language.grammar table lexer in
   "test parser" >::: [
     "parser factory" >:: begin fun () ->
       (*Printf.printf "%s\n%!" (Parser.show(parsing_table));*)

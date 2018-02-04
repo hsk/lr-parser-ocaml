@@ -24,7 +24,7 @@ let lex: lexDefinition = [
   "INVALID", Reg".",                    None;
 ]
 
-let language: language = (lex, grammar, "EXP")
+let language: language = (grammar, "EXP")
 
 let test () =
   let table = Parsergenerator.generate language in
@@ -33,10 +33,8 @@ let test () =
   "Calculator test with broken language" >::: [
     (* TODO: パーサが壊れていることを(コンソール出力以外で)知る方法 *)
     "parsing table is broken" >:: begin fun () ->
-      let table = Parsergenerator.generate language in
-      let _ = Parser.create grammar table in
-      assert_equal (Parsergenerator.isConflicted()) true;
-      assert_equal !Parsergenerator.table_type "CONFLICTED";
+      assert_equal (Parsergenerator.isConflicted table) true;
+      table |> (fun (res,_)->assert_equal res "CONFLICTED");
     end;
     "\"1+1\" equals 2" >:: begin fun () ->
       assert_equal (Obj.magic (parser "1+1")) 2

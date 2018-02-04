@@ -1,4 +1,5 @@
 open Token
+open Lexer
 open Language
 
 let lex: lexDefinition = [
@@ -39,4 +40,4 @@ let grammar: grammarDefinition = [
   "SYMBOLLIST",["LABEL"],                              None;
 ]
 
-let language = language(lex, grammar, "LANGUAGE")
+let language = language(grammar, "LANGUAGE")

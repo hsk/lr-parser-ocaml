@@ -1,4 +1,5 @@
 open Token
+open Lexer
 open Language
 
 let lex: lexDefinition = [
@@ -21,7 +22,7 @@ let grammar: grammarDefinition = [
   "ATOM", ["LPAREN"; "EXP"; "RPAREN"], Some(fun(c,_) -> List.nth c(1));
 ]
 
-let language = language(lex,grammar,"EXP")
+let language = language(grammar,"EXP")
 
 open Parser
 

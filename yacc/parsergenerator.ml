@@ -8,10 +8,10 @@ open Closureset
 open Closureitem
 open Symboldiscriminator
 
-let table_type = ref ""
 (* DFAから構文解析表を構築する *)
-let generateParsingTable db dfa : parsingTable =
-  dfa |> List.map (fun node ->
+let generateParsingTable db dfa table_type : (string * parsingTable) =
+  let table_type = ref table_type in
+  let table = dfa |> List.map (fun node ->
     (* 辺をもとにshiftとgotoオペレーションを追加 *)
     let table_row = M.fold_left(fun table_row (label, to1) ->
       if isTerminalSymbol db.symbols label then M.add label (Shift(to1)) table_row
@@ -43,29 +43,28 @@ let generateParsingTable db dfa : parsingTable =
       ) table_row item.lookaheads
     ) table_row (node.closure.items) in
     M.bindings table_row
-  )
+  ) in
+  (!table_type, table)
 
 (* 言語定義から構文解析表および構文解析器を生成するパーサジェネレータ *)
-let generate language : parsingTable =
+let generate language : (string * parsingTable) =
   let db = genGrammarDB language in
-  let lr_dfa = generateLR1DFA db in
-  let lalr_dfa = generateLALR1DFA db lr_dfa in
-  table_type:="LALR1";
-  let lalr_table = generateParsingTable db lalr_dfa in
-  if !table_type <> "CONFLICTED" then lalr_table
+  let (lr_dfa:dfa) = generateLR1DFA db in
+  let (lalr_dfa:dfa) = generateLALR1DFA db lr_dfa in
+  let (table_type, lalr_table) = generateParsingTable db lalr_dfa "LALR1" in
+  if table_type <> "CONFLICTED" then (table_type, lalr_table)
   else begin
-    table_type:="LR1";
     (* LALR(1)構文解析表の生成に失敗 *)
     (* LR(1)構文解析表の生成を試みる *)
     Printf.printf "LALR parsing conflict found. use LR(1) table.\n";
-    let lr_table = generateParsingTable db lr_dfa in
-    if !table_type <> "CONFLICTED" then lr_table
+    let (table_type, lr_table) = generateParsingTable db lr_dfa "LR1" in
+    if table_type <> "CONFLICTED" then (table_type, lr_table)
     else begin
       (* LR(1)構文解析表の生成に失敗 *)
       Printf.fprintf stderr "LR(1) parsing conflict found. use LR(1) conflicted table.\n";
-      lr_table
+      (table_type, lr_table)
     end
   end
 
 (* 生成された構文解析表に衝突が発生しているかどうかを調べる *)
-let isConflicted (): bool = !table_type = "CONFLICTED"
+let isConflicted (table_type, _): bool = table_type = "CONFLICTED"

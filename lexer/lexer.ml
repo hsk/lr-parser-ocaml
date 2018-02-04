@@ -1,5 +1,18 @@
 open Token
 
+type ptn = Str of string | Reg of string (* パターン *)
+type lexCallback = (any * any) -> any (* 字句規則マッチ時に呼び出されるコールバック *)
+type lexRule = token * ptn * lexCallback option (* 単一の字句ルール *)
+type lexDefinition = lexRule list(* 字句規則 *)
+
+let show_ptn = function
+  | Str(s) -> Printf.sprintf "Str(%S)" s
+  | Reg(s) -> Printf.sprintf "Reg(%S)" s
+let show_lexRule = function
+  | (token,ptn,None) -> Printf.sprintf "(%S,%s,None)"  token (show_ptn ptn)
+  | (token,ptn,Some(_)) -> Printf.sprintf "(%S,%s,Some(_))" token (show_ptn ptn)
+let show_lexDef ls = "[" ^ String.concat ";" (List.map show_lexRule ls) ^ "]"
+
 (* 入力からトークン1つ分読み込む *)
 let step lex callback (input:string): (string * tokenizedInput) =
   if input = "" then (input, ("EOF", "")) else (* 最後にEOFトークンを付与 *)

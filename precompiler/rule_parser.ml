@@ -1,6 +1,9 @@
 open Language
 open Token
+open Lexer
 open Parser
+
+let show (lex,language) = Printf.sprintf "(%s,%s)" (Lexer.show_lexDef lex) (Language.show language)
 
 let lex: lexDefinition = [
   "EXCLAMATION",Str"!",None;
@@ -38,7 +41,7 @@ let grammar: grammarDefinition = [
     | "",(ltoken,_,_)::_ -> ltoken
     | s,_ -> s
     in
-    Obj.magic (language(Obj.magic c0, grammar, start_symbol))
+    Obj.magic ((Obj.magic c0 :lexDefinition), (grammar, start_symbol))
   );
   "LEX", ["LEX";"LEXSECT"], Some(fun ([c0;c1], _) ->
     Obj.magic ((Obj.magic c0) @ [(Obj.magic c1:lexRule)])
@@ -77,7 +80,7 @@ let grammar: grammarDefinition = [
 ]
 
 (* 言語定義文法の言語定義 *)
-let language = language(lex, grammar, "LANGUAGE")
+let language = language(grammar, "LANGUAGE")
 
 (* 言語定義文法の言語定義、の構文解析表 *)
 let parsing_table: parsingTable = [
@@ -113,7 +116,7 @@ let parsing_table: parsingTable = [
 ]
 
 (* 言語定義ファイルを読み込むための構文解析器 *)
-let rule_parse = Parser.create grammar parsing_table
+let rule_parse = Parser.create grammar ("",parsing_table)
 
 let read filename =
   let lines = ref [] in

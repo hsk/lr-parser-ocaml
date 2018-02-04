@@ -1,4 +1,5 @@
 open Token
+open Lexer
 open Language
 
 let grammar: grammarDefinition = [
@@ -21,4 +22,4 @@ let lex: lexDefinition = [
   "INVALID",   Reg("."),None;
 ]
 
-let language = language(lex,grammar,"S")
+let language = language(grammar,"S")

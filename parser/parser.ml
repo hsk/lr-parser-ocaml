@@ -85,7 +85,7 @@ let parse grammar parsingtable callback (lexer:lexer) input =
   List.nth result_stack 0
 
 (* Parserを生成するためのファクトリ *)
-let create grammar parsingtable =
+let create grammar (_,parsingtable) =
   parse grammar parsingtable (fun (id, children) ->
     match List.nth grammar id with
     | (ltoken,_,Some(callback)) -> callback(children, ltoken)

@@ -12,7 +12,7 @@ let createLex lex = Lexer.exec lex (fun (id, value) ->
   Obj.magic(ASTNode(token, value, []))
 )
 
-let createParser grammar parsingtable =
+let createParser grammar (_,parsingtable) =
   Parser.parse grammar parsingtable (fun (id, children) ->
     let (ltoken,_,_) = List.nth grammar id in
     Obj.magic(ASTNode(ltoken, Obj.magic "", Obj.magic children))

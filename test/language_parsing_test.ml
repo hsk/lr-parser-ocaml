@@ -1,4 +1,5 @@
 open OUnit
+open Lexer
 open Language
 open Rule_parser
 open Parser
@@ -11,11 +12,11 @@ let test () =
   (* language_parserと同一のものであることが期待される *)
   "language parsing test" >::: [
     "parsing language file" >:: begin fun () ->
-      assert_equal ~printer:Language.show (Obj.magic (parse input)) Language_language.language
+      assert_equal ~printer:Rule_parser.show (Obj.magic (parse input)) (Language_language.lex,Language_language.language)
     end;
     (* languageファイルを読み取ってパーサを生成したい *)
     "language_parser" >:: begin fun () ->
-      assert_equal  ~printer:Language.show (Obj.magic (rule_parse lexer input)) Language_language.language
+      assert_equal  ~printer:Rule_parser.show (Obj.magic (rule_parse lexer input)) (Language_language.lex,Language_language.language)
     end;
   ]
 

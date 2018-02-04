@@ -48,7 +48,7 @@ let initDefMap grammar : (int * grammarRule) array M.t =
   ) (0,M.empty) grammar in
   rulemap
 
-let genGrammarDB ((_,grammar,start): language) :grammarDB =
+let genGrammarDB ((grammar,start): language) :grammarDB =
   let symbols = genSymbolDiscriminator grammar in
   {
     grammar = grammar;
@@ -61,7 +61,7 @@ let genGrammarDB ((_,grammar,start): language) :grammarDB =
 
 
 (* 構文規則がいくつあるかを返す ただし-1番の規則は含めない *)
-let rule_size db: int = List.length db.grammar
+let rule_size db : int = List.length db.grammar
 
 (* 与えられたidの規則が存在するかどうかを調べる *)
 let hasRuleId db id : bool = id >= -1 && id < rule_size(db)
