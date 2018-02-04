@@ -1,7 +1,6 @@
 open Language
 open Token
 open Parser
-open Parsergenerator
 open Rule_parser
 
 let run callback =
@@ -32,13 +31,13 @@ let exec(input: string): string = run (fun out1 ->
   let out fmt = Printf.kprintf (fun str -> out1 (str ^ "\n")) fmt in
   let lexer = Lexer.create Rule_parser.lex in
   let (lex,grammar,start) :language = Obj.magic(rule_parse lexer input) in
-  let parsing_table = generateParsingTable(language) in
+  let parsing_table = Parsergenerator.generate language in
 
   out "open Token";
   out "open Language";
   out "open Parsingtable";
   out "open Parser";
-  out "let language = language(";
+  out "let language:language = (";
   out "  [";
   lex |> List.iter (fun (token,pattern,_) ->
     match pattern with

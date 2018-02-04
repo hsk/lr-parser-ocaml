@@ -47,16 +47,16 @@ let test () =
         assert(Closureset.size(cs) = 9)
       end;
       "ClosureSet array" >:: begin fun () ->
-        assert(Closureset.getArray(cs) = expanded)
+        assert(cs.items = expanded)
       end;
       "ClosureSet equality" >::: [
         "compare itself" >:: begin fun () ->
-          assert(Closureset.isSameLR0(cs, cs));
-          assert(Closureset.isSameLR1(cs, cs))
+          assert(Closureset.isSameLR0 cs cs);
+          assert(Closureset.isSameLR1 cs cs)
         end;
         "compare closureset that is given expanded items to constructor" >:: begin fun () ->
-          assert(Closureset.isSameLR0(cs, genClosureSet grammardb expanded_shuffled));
-          assert(Closureset.isSameLR1(cs, genClosureSet grammardb expanded_shuffled))
+          assert(Closureset.isSameLR0 cs (genClosureSet grammardb expanded_shuffled));
+          assert(Closureset.isSameLR1 cs (genClosureSet grammardb expanded_shuffled))
         end;
       ];
       "ClosureSet#include" >:: begin fun () ->
@@ -99,7 +99,7 @@ let test2 () =
         assert(Closureset.size(cs) = 2)
       end;
       "ClosureSet array" >:: begin fun () ->
-        assert(Closureset.getArray(cs) = expanded)
+        assert(cs.items = expanded)
       end;
       "ClosureSet#include" >:: begin fun () ->
         expanded |> Array.iter (fun ci -> assert(Closureset.includes(cs,ci)))

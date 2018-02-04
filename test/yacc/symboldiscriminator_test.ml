@@ -9,44 +9,44 @@ let test () =
   "SymbolDiscriminator test" >::: [
     "test sample language" >::: [
       "S is Nonterminal" >:: begin fun () ->
-        assert(isNonterminalSymbol(symbols, "S"));
-        assert(not(isTerminalSymbol(symbols, "S")))
+        assert(isNonterminalSymbol symbols "S");
+        assert(not(isTerminalSymbol symbols "S"))
       end;
       "E is Nonterminal" >:: begin fun () ->
-        assert(isNonterminalSymbol(symbols, "E"));
-        assert(not(isTerminalSymbol(symbols, "E")))
+        assert(isNonterminalSymbol symbols "E");
+        assert(not(isTerminalSymbol symbols "E"))
       end;
       "LIST is Nonterminal" >:: begin fun () ->
-        assert(isNonterminalSymbol(symbols, "LIST"));
-        assert(not(isTerminalSymbol(symbols, "LIST")))
+        assert(isNonterminalSymbol symbols "LIST");
+        assert(not(isTerminalSymbol symbols "LIST"))
       end;
       "T is Nonterminal" >:: begin fun () ->
-        assert(isNonterminalSymbol(symbols, "T"));
-        assert(not(isTerminalSymbol(symbols, "T")))
+        assert(isNonterminalSymbol symbols "T");
+        assert(not(isTerminalSymbol symbols "T"))
       end;
       "HOGE is Nonterminal" >:: begin fun () ->
-        assert(isNonterminalSymbol(symbols, "HOGE"));
-        assert(not(isTerminalSymbol(symbols, "HOGE")))
+        assert(isNonterminalSymbol symbols "HOGE");
+        assert(not(isTerminalSymbol symbols "HOGE"))
       end;
       "SEMICOLON is Terminal" >:: begin fun () ->
-        assert(not(isNonterminalSymbol(symbols, "SEMICOLON")));
-        assert(isTerminalSymbol(symbols, "SEMICOLON"))
+        assert(not(isNonterminalSymbol symbols "SEMICOLON"));
+        assert(isTerminalSymbol symbols "SEMICOLON")
       end;
       "SEPARATE is Terminal" >:: begin fun () ->
-        assert(not(isNonterminalSymbol(symbols, "SEPARATE")));
-        assert(isTerminalSymbol(symbols, "SEPARATE"))
+        assert(not(isNonterminalSymbol symbols "SEPARATE"));
+        assert(isTerminalSymbol symbols "SEPARATE")
       end;
       "ATOM is Terminal" >:: begin fun () ->
-        assert(not(isNonterminalSymbol(symbols, "ATOM")));
-        assert(isTerminalSymbol(symbols, "ATOM"))
+        assert(not(isNonterminalSymbol symbols "ATOM"));
+        assert(isTerminalSymbol symbols "ATOM")
       end;
       "ID is Terminal" >:: begin fun () ->
-        assert(not(isNonterminalSymbol(symbols, "ID")));
-        assert(isTerminalSymbol(symbols, "ID"))
+        assert(not(isNonterminalSymbol symbols "ID"));
+        assert(isTerminalSymbol symbols "ID")
       end;
       "INVALID (not appear in grammar) is neither Nonterminal nor Terminal" >:: begin fun () ->
-        assert(not(isNonterminalSymbol(symbols, "INVALID")));
-        assert(not(isTerminalSymbol(symbols, "INVALID")))
+        assert(not(isNonterminalSymbol symbols "INVALID"));
+        assert(not(isTerminalSymbol symbols "INVALID"))
       end;
       "Check nonterminal symbols set" >:: begin fun () ->
         let nt = symbols.nonterminal_symbols in

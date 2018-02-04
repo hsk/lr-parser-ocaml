@@ -2,7 +2,7 @@ open OUnit
 open Token
 open Lexer
 
-let test_sample_lex: lexDefinition = [
+let lex: lexDefinition = [
   "ATOM",      Str"x",                     None;
   "ID",        Reg"[a-zA-Z_][a-zA-Z0-9_]*",None;
   "SEMICOLON", Str";",                     None;
@@ -15,7 +15,7 @@ let test_sample_lex: lexDefinition = [
 let test () =
   "Lexer test" >::: [
     "exec valid input" >:: begin fun () ->
-      let lexer = create test_sample_lex in
+      let lexer = create lex in
       assert_equal ~printer:Lexer.show (lexer "xabc;x|&0ax x z;") [
         "ID", "xabc";
         "SEMICOLON", ";";
@@ -35,7 +35,7 @@ let test () =
       assert_raises (Failure "no pattern matched") (fun () ->lexer "xabc;x|&0ax x z;")
     end;
     "exec no length input" >:: begin fun () ->
-      let lexer = create test_sample_lex in
+      let lexer = create lex in
       assert_equal ~printer:Lexer.show (lexer "") ["EOF", ""];
       let lexer = create [] in
       assert_equal ~printer:Lexer.show (lexer "") ["EOF", ""];

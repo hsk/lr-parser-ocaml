@@ -8,7 +8,7 @@ let _ =
     Symboldiscriminator_test.test();
     Firstset_test.test ();
     Firstset_test.test2 ();
-    Syntaxdb_test.test ();
+    Grammardb_test.test ();
     Closureitem_test.test ();
     Closureset_test.test ();
     Closureset_test.test2 ();

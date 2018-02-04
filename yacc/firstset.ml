@@ -11,7 +11,7 @@ type cons = token * token
 
 (* First集合を生成する *)
 (* symbols 終端/非終端記号の判別に用いる分類器 *)
-let generateFirst((grammar: grammarDefinition), (symbols: symbolDiscriminator)):firstSet =
+let generateFirst grammar (symbols: symbolDiscriminator):firstSet =
   let nulls = generateNulls grammar in
   (* Firstを導出 *)
   (* 初期化 *)
@@ -35,7 +35,7 @@ let generateFirst((grammar: grammarDefinition), (symbols: symbolDiscriminator)):
       | [] -> constraints
       | sub::pattern -> 
         let constraints = if sup <> sub then (sup, sub)::constraints else constraints in
-        if not(isNullable(nulls, sub)) then constraints else loop constraints pattern
+        if not (isNullable nulls sub) then constraints else loop constraints pattern
     in
     loop constraints pattern
   ) [] grammar in
@@ -56,12 +56,12 @@ let generateFirst((grammar: grammarDefinition), (symbols: symbolDiscriminator)):
 
 
 (* 記号または記号列を与えて、その記号から最初に導かれうる非終端記号の集合を返す *)
-let get((set:firstSet), (arg: token)): S.t =
+let get (set:firstSet) token: S.t =
   (* 単一の記号の場合 *)
-  if not(M.mem arg set.first_map) then failwith("invalid token found: " ^ arg);
-  M.find arg set.first_map
+  if not(M.mem token set.first_map) then failwith("invalid token found: " ^ token);
+  M.find token set.first_map
 
-let getFromList((set:firstSet), (tokens: token list)): S.t =
+let getFromList (set:firstSet) tokens: S.t =
   (* 記号列の場合 *)
   let (_,result) = List.fold_left (fun (endflg,result) token ->
     (* 不正な記号を発見 *)
@@ -69,7 +69,7 @@ let getFromList((set:firstSet), (tokens: token list)): S.t =
     if endflg then (endflg, result) else
     (* トークン列の先頭から順にFirst集合を取得 *)
     let result = S.union result (M.find token set.first_map) in (* 追加 *)
-    let endflg = not (isNullable(set.nulls, token)) in (* 現在のトークン ∉ Nulls ならばここでストップ *)
+    let endflg = not (isNullable set.nulls token) in (* 現在のトークン ∉ Nulls ならばここでストップ *)
     (endflg, result)
   ) (false,S.empty) tokens in
   result

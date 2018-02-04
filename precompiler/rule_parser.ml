@@ -77,7 +77,7 @@ let grammar: grammarDefinition = [
 ]
 
 (* 言語定義文法の言語定義 *)
-let language: language = language(lex, grammar, "LANGUAGE")
+let language = language(lex, grammar, "LANGUAGE")
 
 (* 言語定義文法の言語定義、の構文解析表 *)
 let parsing_table: parsingTable = [

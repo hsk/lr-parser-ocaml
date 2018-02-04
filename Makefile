@@ -16,7 +16,7 @@ all:
  		test/yacc/nullableset_test.ml \
 		test/yacc/symboldiscriminator_test.ml \
 		test/yacc/firstset_test.ml \
-		test/yacc/syntaxdb_test.ml \
+		test/yacc/grammardb_test.ml \
 		test/yacc/closureitem_test.ml \
 		test/yacc/closureset_test.ml \
 		test/parser/parser_test.ml \

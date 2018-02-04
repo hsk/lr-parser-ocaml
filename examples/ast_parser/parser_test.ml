@@ -3,10 +3,9 @@ open Token
 open Language
 open Ast
 open Parser
-open Parsergenerator
 
 let test () =
-  let parsingtable = generateParsingTable test_calc_language in
+  let parsingtable = Parsergenerator.generate test_calc_language in
   let parser = Ast.createParser test_calc_language.grammar parsingtable in
   "parser test" >::: [
     "getting calc language ast" >:: begin fun () ->

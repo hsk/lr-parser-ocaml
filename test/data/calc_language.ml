@@ -22,3 +22,20 @@ let grammar: grammarDefinition = [
 ]
 
 let language = language(lex,grammar,"EXP")
+
+open Parser
+
+let parsing_table = [
+  ["ATOM",Goto(1);"DIGITS",Shift(2);"EXP",Goto(3);"LPAREN",Shift(4);"TERM",Goto(5)];
+  ["ASTERISK",Reduce(3);"EOF",Reduce(3);"PLUS",Reduce(3);"RPAREN",Reduce(3)];
+  ["ASTERISK",Reduce(4);"EOF",Reduce(4);"PLUS",Reduce(4);"RPAREN",Reduce(4)];
+  ["EOF",Accept;"PLUS",Shift(6)];
+  ["ATOM",Goto(1);"DIGITS",Shift(2);"EXP",Goto(7);"LPAREN",Shift(4);"TERM",Goto(5)];
+  ["ASTERISK",Shift(8);"EOF",Reduce(1);"PLUS",Reduce(1);"RPAREN",Reduce(1)];
+  ["ATOM",Goto(1);"DIGITS",Shift(2);"LPAREN",Shift(4);"TERM",Goto(9)];
+  ["PLUS",Shift(6);"RPAREN",Shift(10)];
+  ["ATOM",Goto(11);"DIGITS",Shift(2);"LPAREN",Shift(4)];
+  ["ASTERISK",Shift(8);"EOF",Reduce(0);"PLUS",Reduce(0);"RPAREN",Reduce(0)];
+  ["ASTERISK",Reduce(5);"EOF",Reduce(5);"PLUS",Reduce(5);"RPAREN",Reduce(5)];
+  ["ASTERISK",Reduce(2);"EOF",Reduce(2);"PLUS",Reduce(2);"RPAREN",Reduce(2)];
+]

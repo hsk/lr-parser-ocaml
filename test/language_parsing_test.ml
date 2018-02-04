@@ -1,13 +1,12 @@
 open OUnit
 open Language
 open Rule_parser
-open Parsergenerator
 open Parser
 
 let test () =
   let input = read("language") in
   let lexer = Lexer.create Rule_parser.lex in
-  let table = generateParsingTable Rule_parser.language in
+  let table = Parsergenerator.generate Rule_parser.language in
   let parse = Parser.create Rule_parser.grammar table lexer in
   (* language_parserと同一のものであることが期待される *)
   "language parsing test" >::: [

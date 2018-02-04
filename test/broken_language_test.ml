@@ -2,10 +2,7 @@ open OUnit
 open Lexer
 open Parser
 open Language
-open Parsergenerator
-
 open Token
-open Language
 
 let grammar: grammarDefinition = [
   "EXP", ["EXP"; "PLUS"; "EXP"], Some(fun (c,_)-> Obj.magic((Obj.magic List.nth c(0) :int) + (Obj.magic List.nth c(2) :int)));
@@ -27,19 +24,19 @@ let lex: lexDefinition = [
   "INVALID", Reg".",                    None;
 ]
 
-let language = language(lex, grammar, "EXP")
+let language: language = (lex, grammar, "EXP")
 
 let test () =
-  let table = generateParsingTable language in
+  let table = Parsergenerator.generate language in
   let lexer = Lexer.create lex in
   let parser = Parser.create grammar table lexer in
   "Calculator test with broken language" >::: [
     (* TODO: パーサが壊れていることを(コンソール出力以外で)知る方法 *)
     "parsing table is broken" >:: begin fun () ->
-      let table = generateParsingTable language in
+      let table = Parsergenerator.generate language in
       let _ = Parser.create grammar table in
-      assert_equal (isConflicted()) true;
-      assert_equal !table_type "CONFLICTED";
+      assert_equal (Parsergenerator.isConflicted()) true;
+      assert_equal !Parsergenerator.table_type "CONFLICTED";
     end;
     "\"1+1\" equals 2" >:: begin fun () ->
       assert_equal (Obj.magic (parser "1+1")) 2

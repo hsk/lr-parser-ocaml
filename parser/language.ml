@@ -13,4 +13,4 @@ let show_grammarRule = function
 let show_grammarDef ls = "[" ^ String.concat ";" (List.map show_grammarRule ls) ^ "]"
 
 let show (lex,grammar,start) =
-  Printf.sprintf "language(%s,%s,%S)" (show_lexDef lex) (show_grammarDef grammar) start
+  Printf.sprintf "(%s,%s,%S)" (show_lexDef lex) (show_grammarDef grammar) start

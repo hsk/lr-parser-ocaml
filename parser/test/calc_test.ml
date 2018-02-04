@@ -23,7 +23,7 @@ let grammar: grammarDefinition = [
   "ATOM",["LPAREN";"EXP";"RPAREN"], Some(fun([_;c1;_],_) -> c1);
 ]
 
-let calc_language = language(lex,grammar,"EXP")
+let language = (lex,grammar,"EXP")
 
 let parsing_table : parsingTable = [
   ["ATOM",Goto(1);"DIGITS",Shift(2);"EXP",Goto(3);"LPAREN",Shift(4);"TERM",Goto(5);];

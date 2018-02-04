@@ -6,7 +6,7 @@ open Utils
 type nullableSet = S.t
 
 (* @param {GrammarDefinition} grammar 構文規則 *)
-let generateNulls(grammar: grammarDefinition):nullableSet =
+let generateNulls grammar : nullableSet =
   (* 制約条件を導出するために、*)
   (* 空列になりうる記号の集合nullsを導出 *)
   let nulls = grammar |>
@@ -29,4 +29,4 @@ let generateNulls(grammar: grammarDefinition):nullableSet =
   loop nulls
 
 (* 与えられた[[Token]]がNullableかどうかを調べる *)
-let isNullable((set:nullableSet), (token: token)):bool = S.mem token set
+let isNullable nulls token : bool = S.mem token nulls

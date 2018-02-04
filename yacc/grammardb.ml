@@ -15,7 +15,7 @@ type grammarDB = {
 }
 
 (* それぞれの記号にidを割り振り、Token->numberの対応を生成 *)
-let initTokenMap(grammar: grammarDefinition): int M.t =
+let initTokenMap grammar : int M.t =
   let tokenid_counter = ref (-1) in
   let new_tokenid () =
     incr tokenid_counter;
@@ -40,7 +40,7 @@ let initTokenMap(grammar: grammarDefinition): int M.t =
   ) tokenmap grammar
 
 (* ある記号を左辺とするような構文ルールとそのidの対応を生成 *)
-let initDefMap(grammar: grammarDefinition): (int * grammarRule) array M.t =
+let initDefMap grammar : (int * grammarRule) array M.t =
   let (_,rulemap) = List.fold_left(fun (i,(rulemap:(int * grammarRule) array M.t)) ((ltoken,_,_) as rule) ->
     let r = [|i, rule|] in
     let r = if M.mem ltoken rulemap then Array.append (M.find ltoken rulemap) r else r in
@@ -48,15 +48,15 @@ let initDefMap(grammar: grammarDefinition): (int * grammarRule) array M.t =
   ) (0,M.empty) grammar in
   rulemap
 
-let genGrammarDB((_,grammar,start): language) :grammarDB =
-  let symbols = genSymbolDiscriminator(grammar) in
+let genGrammarDB ((_,grammar,start): language) :grammarDB =
+  let symbols = genSymbolDiscriminator grammar in
   {
-    grammar=grammar;
-    start_symbol=start;
-    first=generateFirst(grammar, symbols);
-    symbols=symbols;
-    tokenmap= initTokenMap(grammar);
-    rulemap=initDefMap(grammar)
+    grammar = grammar;
+    start_symbol = start;
+    first = generateFirst grammar symbols;
+    symbols = symbols;
+    tokenmap = initTokenMap grammar;
+    rulemap = initDefMap grammar;
   }
 
 
@@ -64,16 +64,16 @@ let genGrammarDB((_,grammar,start): language) :grammarDB =
 let rule_size db: int = List.length db.grammar
 
 (* 与えられたidの規則が存在するかどうかを調べる *)
-let hasRuleId(db, id): bool = id >= -1 && id < rule_size(db)
+let hasRuleId db id : bool = id >= -1 && id < rule_size(db)
 
 (* 非終端記号xに対し、それが左辺として対応する定義を得る *)
 (* 対応する定義が存在しない場合は空の配列を返す *)
-let findRules(db, x): (int * grammarRule) array =
+let findRules db x : (int * grammarRule) array =
   if M.mem x db.rulemap then M.find x db.rulemap else [||]
 
 (* 規則idに対応した規則を返す *)
 (* -1が与えられた時は S' -> S $の規則を返す *)
-let getRuleById(db, id): grammarRule =
+let getRuleById db id : grammarRule =
   if (id = -1) then ("S'", [db.start_symbol], None)
   (* GrammarRule("S'", Array(this.start_symbol, "EOF")) *)
   else if id >= 0 && id < List.length db.grammar then List.nth db.grammar id
