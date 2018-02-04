@@ -31,9 +31,8 @@ let exec lex callback input =
   let rec loop input res =
     match step lex callback input with
     | (i,(("EOF",_) as r)) -> List.rev (r::res)
-    | (i,("NULL",_)) -> loop i res
-    | (i,("",_)) -> loop i res
-    | (i,r) -> loop i (r::res)
+    | (i, (""   ,_)      ) -> loop i res
+    | (i,              r ) -> loop i (r::res)
   in
   loop input []
 

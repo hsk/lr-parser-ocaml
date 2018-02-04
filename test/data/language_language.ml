@@ -1,5 +1,6 @@
 open Token
 open Language
+
 let lex: lexDefinition = [
   "EXCLAMATION", Str"!",                     None;
   "VBAR",        Str"|",                     None;
@@ -38,4 +39,4 @@ let grammar: grammarDefinition = [
   "SYMBOLLIST",["LABEL"],                              None;
 ]
 
-let language_language_without_callback = language(lex, grammar, "LANGUAGE")
+let language = language(lex, grammar, "LANGUAGE")

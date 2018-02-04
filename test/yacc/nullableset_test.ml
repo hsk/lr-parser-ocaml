@@ -1,10 +1,9 @@
 open OUnit
 open Nullableset
 open Token
-open Sample_language
 
 let test () =
-  let nulls = generateNulls(test_sample_grammar) in
+  let nulls = generateNulls Sample_language.grammar in
   "NullableSet test" >::: [
     "T is Nullable" >:: begin fun () ->
       assert(isNullable(nulls, "T"))

@@ -77,10 +77,10 @@ let grammar: grammarDefinition = [
 ]
 
 (* 言語定義文法の言語定義 *)
-let rule_language: language = language(lex, grammar, "LANGUAGE")
+let language: language = language(lex, grammar, "LANGUAGE")
 
 (* 言語定義文法の言語定義、の構文解析表 *)
-let rule_parsing_table: parsingTable = [
+let parsing_table: parsingTable = [
   ["LANGUAGE",Goto(1);"LEX",Goto(2);"LEXSECT",Goto(3);"LEXLABEL",Goto(4);"LABEL",Shift(5);"EXCLAMATION",Shift(6)];
   ["EOF",Accept];
   ["GRAMMAR",Goto(7);"LEXSECT",Goto(8);"SECT",Goto(9);"SECTLABEL",Goto(10);"LABEL",Shift(11);"DOLLAR",Shift(12);"LEXLABEL",Goto(4);"EXCLAMATION",Shift(6)];
@@ -113,7 +113,7 @@ let rule_parsing_table: parsingTable = [
 ]
 
 (* 言語定義ファイルを読み込むための構文解析器 *)
-let rule_parse = Parser.create rule_language.grammar rule_parsing_table
+let rule_parse = Parser.create grammar parsing_table
 
 let read filename =
   let lines = ref [] in

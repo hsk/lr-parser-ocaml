@@ -1,12 +1,11 @@
 open OUnit
 open Grammardb
-open Sample_language
 open Closureitem
 open Token
 open Closureset
 
 let test () =
-  let grammardb = genGrammarDB(test_sample_language) in
+  let grammardb = genGrammarDB(Sample_language.language) in
   let cs = genClosureSet grammardb [| genClosureItem grammardb (-1) 0 [|"EOF"|] |] in
   (*
   S' -> . S [$]
@@ -88,7 +87,7 @@ let test () =
   ]
 
 let test2 () =
-  let grammardb = genGrammarDB(test_empty_language) in
+  let grammardb = genGrammarDB(Empty_language.language) in
   let cs = genClosureSet grammardb [| genClosureItem grammardb (-1) 0 [|"EOF"|] |] in
   let expanded = [| 
     genClosureItem grammardb (-1) 0 [|"EOF"|];

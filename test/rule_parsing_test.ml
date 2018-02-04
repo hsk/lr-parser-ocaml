@@ -2,14 +2,13 @@ open OUnit
 open Rule_parser
 open Parser
 open Language
-open Language_language
 
 let test () =
   let input = read("language") in
-  let lexer = Lexer.create rule_language.lex in
+  let lexer = Lexer.create Rule_parser.lex in
   "rule parsing test" >::: [
     "language_parser" >:: begin fun () ->
-      assert_equal ~printer:Language.show (Obj.magic (rule_parse lexer input)) language_language_without_callback
+      assert_equal ~printer:Language.show (Obj.magic (rule_parse lexer input)) Language_language.language
     end;
   ]
 

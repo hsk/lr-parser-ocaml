@@ -30,8 +30,8 @@ let exec_parsing_table parsing_table = run (fun out1 ->
 let exec(input: string): string = run (fun out1 ->
   let o fmt = Printf.kprintf (fun str -> out1 str) fmt in
   let out fmt = Printf.kprintf (fun str -> out1 (str ^ "\n")) fmt in
-  let lexer = Lexer.create rule_language.lex in
-  let language :language = Obj.magic(rule_parse lexer input) in
+  let lexer = Lexer.create Rule_parser.lex in
+  let (lex,grammar,start) :language = Obj.magic(rule_parse lexer input) in
   let parsing_table = generateParsingTable(language) in
 
   out "open Token";
@@ -40,16 +40,16 @@ let exec(input: string): string = run (fun out1 ->
   out "open Parser";
   out "let language = language(";
   out "  [";
-  language.lex |> List.iter (fun (token,pattern,_) ->
+  lex |> List.iter (fun (token,pattern,_) ->
     match pattern with
     | Reg(reg) -> out "\t\t%S, Reg %S,None;" token reg
     | Str(str) -> out "\t\t%S, Str %S,None;" token str
   );
   out "  ],[";
-  language.grammar |>List.iter(fun(ltoken,ptn,_) ->
+  grammar |>List.iter(fun(ltoken,ptn,_) ->
     o "    %S,[" ltoken; ptn |> List.iter (fun ptn -> o "%S;" ptn); out "];"
   );
-  out "  ],%S)" language.start;
+  out "  ],%S)" start;
   out "";
   out "%s" (exec_parsing_table parsing_table);
   out "let parser = create language parsing_table";

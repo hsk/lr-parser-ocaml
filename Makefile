@@ -9,6 +9,8 @@ all:
 		   yacc/dfagenerator.ml yacc/parsergenerator.ml \
 		-I precompiler precompiler/rule_parser.ml  precompiler/precompiler.ml \
 		-I test -I test/data  -I test/parser -I test/precompiler -I test/yacc \
+		test/data/calc_language.ml \
+		test/data/empty_language.ml \
 		test/data/language_language.ml \
 		test/data/sample_language.ml \
  		test/yacc/nullableset_test.ml \
@@ -20,7 +22,6 @@ all:
 		test/parser/parser_test.ml \
 		test/language_parsing_test.ml \
 		test/rule_parsing_test.ml \
-		test/data/broken_language.ml \
 		test/broken_language_test.ml \
 		test/all_test.ml \
 

@@ -1,11 +1,10 @@
 open OUnit
 open Grammardb
-open Sample_language
 open Token
 open Language
 
 let test () =
-  let grammardb = genGrammarDB(test_sample_language) in
+  let grammardb = genGrammarDB(Sample_language.language) in
   "GrammarDB test" >::: [
     "findRules test" >::: [
       "get rules of E" >:: begin fun () ->

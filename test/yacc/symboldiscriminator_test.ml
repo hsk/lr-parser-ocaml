@@ -1,12 +1,11 @@
 open OUnit
 open Utils
 open Symboldiscriminator
-open Sample_language
 open Token
 open Language
 
 let test () =
-  let symbols = genSymbolDiscriminator(test_sample_grammar) in
+  let symbols = genSymbolDiscriminator Sample_language.grammar in
   "SymbolDiscriminator test" >::: [
     "test sample language" >::: [
       "S is Nonterminal" >:: begin fun () ->
@@ -64,9 +63,9 @@ let test () =
         assert_equal (S.cardinal t) 4
       end;
     ];
-    "test sample language" >::: [
+    "test calc language" >::: [
       "Check nonterminal symbols set 2" >:: begin fun () ->
-        let symbols = genSymbolDiscriminator(test_calc_grammar) in
+        let symbols = genSymbolDiscriminator(Calc_language.grammar) in
         let nt = symbols.nonterminal_symbols in
         ["EXP"; "TERM"; "ATOM"] |> List.iter (fun symbol ->
           assert(S.mem symbol nt)
@@ -74,7 +73,7 @@ let test () =
         assert_equal (S.cardinal nt) 3
       end;
       "Check terminal symbols set 2" >:: begin fun () ->
-        let symbols = genSymbolDiscriminator(test_calc_grammar) in
+        let symbols = genSymbolDiscriminator(Calc_language.grammar) in
         let t = symbols.terminal_symbols in
         ["PLUS"; "ASTERISK"; "DIGITS"; "LPAREN"; "RPAREN"] |> List.iter (fun symbol ->
           assert(S.mem symbol t)
@@ -84,15 +83,13 @@ let test () =
     ];
     "test empty language" >::: [
       "Check nonterminal symbols set 3" >:: begin fun () ->
-        let {grammar} = test_empty_language in
-        let symbols = genSymbolDiscriminator(grammar) in
+        let symbols = genSymbolDiscriminator(Empty_language.grammar) in
         let nt = symbols.nonterminal_symbols in
         assert(S.mem "S" nt);
         assert_equal (S.cardinal nt) 1
       end;
       "Check terminal symbols set 3" >:: begin fun () ->
-        let {grammar} = test_empty_language in
-        let symbols = genSymbolDiscriminator(grammar) in
+        let symbols = genSymbolDiscriminator(Empty_language.grammar) in
         let t = symbols.terminal_symbols in
         assert_equal (S.cardinal t) 0
       end;

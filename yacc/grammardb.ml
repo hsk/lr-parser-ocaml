@@ -48,7 +48,7 @@ let initDefMap(grammar: grammarDefinition): (int * grammarRule) array M.t =
   ) (0,M.empty) grammar in
   rulemap
 
-let genGrammarDB({lex;grammar;start}: language) :grammarDB =
+let genGrammarDB((_,grammar,start): language) :grammarDB =
   let symbols = genSymbolDiscriminator(grammar) in
   {
     grammar=grammar;
@@ -61,19 +61,19 @@ let genGrammarDB({lex;grammar;start}: language) :grammarDB =
 
 
 (* 構文規則がいくつあるかを返す ただし-1番の規則は含めない *)
-let rule_size(db: grammarDB): int = List.length db.grammar
+let rule_size db: int = List.length db.grammar
 
 (* 与えられたidの規則が存在するかどうかを調べる *)
-let hasRuleId((db: grammarDB), (id: int)): bool = id >= -1 && id < rule_size(db)
+let hasRuleId(db, id): bool = id >= -1 && id < rule_size(db)
 
 (* 非終端記号xに対し、それが左辺として対応する定義を得る *)
 (* 対応する定義が存在しない場合は空の配列を返す *)
-let findRules((db: grammarDB), (x: token)): (int * grammarRule) array =
+let findRules(db, x): (int * grammarRule) array =
   if M.mem x db.rulemap then M.find x db.rulemap else [||]
 
 (* 規則idに対応した規則を返す *)
 (* -1が与えられた時は S' -> S $の規則を返す *)
-let getRuleById((db: grammarDB), (id: int)): grammarRule =
+let getRuleById(db, id): grammarRule =
   if (id = -1) then ("S'", [db.start_symbol], None)
   (* GrammarRule("S'", Array(this.start_symbol, "EOF")) *)
   else if id >= 0 && id < List.length db.grammar then List.nth db.grammar id

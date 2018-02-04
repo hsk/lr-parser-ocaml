@@ -4,10 +4,10 @@ open Language
 open Utils
 open Firstset
 open Symboldiscriminator
-open Sample_language
 
 let test () =
-  let first = generateFirst(test_sample_grammar, genSymbolDiscriminator(test_sample_grammar)) in
+  let grammar = Sample_language.grammar in
+  let first = generateFirst(grammar, genSymbolDiscriminator grammar) in
   "FirstSet test" >::: [
     "valid one terminal and nonterminal symbol" >::: [
       "First(S) is {SEMICOLON, SEPARATE, ATOM, ID}" >:: begin fun () ->
@@ -85,7 +85,7 @@ let test () =
   ]
 
 let test2 () =
-  let grammar = test_empty_language.grammar in
+  let grammar = Empty_language.grammar in
   let first = generateFirst(grammar, genSymbolDiscriminator(grammar)) in
   "FirstSet test(empty language)" >::: [
     "First(S) is {}" >:: begin fun () ->

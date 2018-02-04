@@ -1,12 +1,11 @@
 open OUnit
 open Closureitem
-open Sample_language
 open Grammardb
 open Token
 open Language
 
 let test () =
-  let grammardb = genGrammarDB(test_sample_language) in
+  let grammardb = genGrammarDB(Sample_language.language) in
   let ci = genClosureItem grammardb (-1) 0 [|"EOF"|] in
   "ClosureItem test" >::: [
     "{S' -> . S [$]}" >::: [
