@@ -18,7 +18,6 @@
         - closureset.ml LRアイテムの集合
 - README.md このファイル
 
-
 ## 大まかな処理の流れ
 
 パーサジェネレータは、言語の文法と開始記号を受け取ってまず、grammarDBを生成します。
@@ -92,20 +91,74 @@ c -> id
 
 ### closureitem.ml LRアイテム
 
-TODO:かきかけ
 DFAの要素がclosureitemです。
+
+```
+S -> A B
+A -> Num
+B -> ;
+B -> $
+```
+
+以上のような文法が合った時に、読み込み状態を `.` で表し、そこで現れる次の記号列を`[]`で括って表すと
+
+```
+S -> . A B [Num]
+S -> A . B [;,$]
+S -> A B . []
+A -> . Num [Num]
+A -> Num . []
+B -> . ; [;]
+B -> ; . []
+B -> . $ [$]
+B -> $ . []
+```
+
+のように書くことが出来ます。`S -> . A B [Num]` のような各要素をLRアイテムといいます。
+空間効率をや使いやすさを考えて文法IDと `.` の位置dot_index、そこで呼ばれるであろう記号列をソートして保持し、lr0とlr1用の同値判定をやりやすくするためにハッシュも生成して保持します。
+
+```
+type closureItem = {
+  rule_id: int; dot_index: int; lookaheads: token array; (* 規則id・ドット位置・先読記号集合 *)
+  lr0_hash: string; lr1_hash: string                     (* LR(0)、LR(1)アイテムのハッシュ値 *)
+}
+```
+
+実際の定義は以上のようになります。
 
 ### closureset.ml LRアイテムの集合
 
-TODO:かきかけ
-DFAの要素のclosureitemを集めたものがclosuresetです。
+DFAの要素のLRアイテムを集めたものがLRアイテム集合closuresetです。
+アイテム集合を生成するにはアイテム集合を受け取って展開したあと、アイテムと同様にハッシュを生成します。
+はて、アイテム集合を生成するのにアイテム集合が必要なら最初のアイテム集合はどうなるのでしょう？
+というと、開始記号アイテムのみの集合を種にします。
+
+```
+  let ci = genClosureItem db (-1) 0 [|"EOF"|] in
+  let cs = genClosureSet db [|ci|] in
+```
+
+展開処理は、以下の③つの処理を行います：
+
+- ①最初にClosureItemをlookaheadsごとに分解する。
+- ②各要素を更に展開しアイテム追加しながら変更がなくなるまで繰り返す
+- ③マージする
+
+おそらくこのあたりが一番複雑です。詳細はソースを見てください。
 
 ### dfagenerator.ml DFAジェネレータ
 
-TODO:かきかけ
+DFAの生成もclosuresetのような感じで生成できます。
+これもまた複雑です。詳細はソースを見てください。
+
+generateLR1DFA でLR1のDFAを生成し、generateLALR1DFAでLR1のDFAを圧縮したLALR1のDFAを生成します。
 
 ### parsergenerator.ml パーサジェネレータメイン
 
 大まかな流れはすでに説明しましたが、DFAから構文解析表を作る説明はまだですので説明します。
 
-TODO:かきかけ
+構文解析表の生成はDFAのノードから構文解析表の要素へマップしたものです。
+ノードの辺のラベルが終端記号ならshiftと非終端ならgotoオペレーションを追加できます。
+
+ノードのClosureをもとにitemのルールがEOFならacceptを追加でき、それ以外ならreduceオペレーションを追加できます。
+追加する際にすでに追加されていた場合コンフリクトが発生していることになります。

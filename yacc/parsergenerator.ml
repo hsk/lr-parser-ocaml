@@ -11,7 +11,7 @@ open Symboldiscriminator
 (* DFAから構文解析表を構築する *)
 let generateParsingTable db dfa table_type : (string * parsingTable) =
   let table_type = ref table_type in
-  let table = dfa |> List.map (fun node ->
+  let dfa_to_table_element node =
     (* 辺をもとにshiftとgotoオペレーションを追加 *)
     let table_row = M.fold_left(fun table_row (label, to1) ->
       if isTerminalSymbol db.symbols label then M.add label (Shift(to1)) table_row
@@ -43,7 +43,8 @@ let generateParsingTable db dfa table_type : (string * parsingTable) =
       ) table_row item.lookaheads
     ) table_row (node.closure.items) in
     M.bindings table_row
-  ) in
+  in
+  let table = dfa |> List.map dfa_to_table_element in
   (!table_type, table)
 
 (* 言語定義から構文解析表および構文解析器を生成するパーサジェネレータ *)
