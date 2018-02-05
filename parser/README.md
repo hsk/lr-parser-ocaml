@@ -95,15 +95,12 @@ Reduceの動作が一番複雑です:
 
 以下に文法と構文解析表および `1 + 2 * 3 $` 動作を示します。ここで、`($)` は`EOF` を表します。
 
-文法
-
+    文法
     g0 E -> E + T         { $1 + $2 }
     g1 E -> T             { $1 }
     g2 T -> T * NUM       { $1 * $2 }
     g3 T -> NUM           { $1 }
-
-構文解析表
-
+    構文解析表
     s0  NUM : Shift 2                                            E : Goto 1  T : Goto 3
     s1                 + : Shift  4                $ : Accept                          
     s2                 + : Reduce 3  * : Reduce 3  $ : Reduce 3                        
@@ -112,9 +109,6 @@ Reduceの動作が一番複雑です:
     s5  NUM : Shift 7                                                                  
     s6                 + : Reduce 0  * : Shift  5  $ : Reduce 0                        
     s7                 + : Reduce 2  * : Reduce 2  $ : Reduce 2                        
-
-動作
-
     命令      in           st           res       動作                                     次の命令
               1 + 2 * 3 $  0                      開始時はstに0をセット,                   s0とinのtop NUM から
     Shift  2  + 2 * 3 $    2 0          1         stに2をpush,resにinの1をpush,            s2とinのtop + から
