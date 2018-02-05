@@ -38,26 +38,35 @@ let rec drop = function
 let rec pop2 num stack = drop (num,[], stack)
 let rec pop num stack = let (_,stack) = pop2 num stack in stack
 
+let debug_mode = ref false
+
+let debug_out str = if !debug_mode then Printf.printf "%s\n%!" str
+let log fmt = Printf.kprintf (fun str -> debug_out str) fmt
+let logState(i,s,r) =
+  log "%s %s %s" (show_tokeninputs i) (show_ls (List.map string_of_int s)) (show_ls r)
+let logOp op = log "%s" (show_op op); op
 (* 構文解析ステートマシン *)
 (* states 現在読んでいる構文解析表の状態番号を置くスタック *)
 (* results 解析中のASTノードを置くスタック *)
-let rec automaton parser inputs states results = 
-  match (parser, states, inputs) with
-  | (_, _, []) -> ("", results)
-  | ((grammar,parsingtable,callback), state::_, (token,value)::inp) ->
-    begin try match List.assoc token (List.nth parsingtable state) with
+let rec automaton parser inputs states results =
+  logState(inputs,states,results);
+  match (inputs,parser,states) with
+  | ([], _, _) -> ("", results)
+  | ((token,value)::inp,(grammar,parsingtable,callback), state::_) ->
+    begin try match logOp(List.assoc token (List.nth parsingtable state)) with
     | Accept -> ("", results) (* 完了 *)
     | Shift(to1) -> automaton parser inp (to1 :: states) (value :: results)
     | Reduce(grammar_id) ->
       let (ltoken,pattern,_) = List.nth grammar grammar_id in
       let rnum = List.length pattern in
-      let (children, results) = pop2 rnum results in (* 右辺の記号の数だけポップ *)
+      let (children, results) = pop2 rnum results in  (* 右辺の記号の数だけポップ *)
       let ((state::_) as states) = pop rnum states in (* 対応する規則の右辺の記号の数だけポップ *)
-      let child = callback(grammar_id, children) in (* callback 実行 *)
+      let results = callback(grammar_id, children) :: results in (* callback 実行 *)
+      logState(inputs,states,results);
       (* 次は必ず Goto *)
-      begin match List.assoc ltoken (List.nth parsingtable state) with
-      | Goto(to1) -> automaton parser inputs (to1 :: states) (child :: results)
-      | _ -> ("parse failed: goto operation expected after reduce operation", child :: results)
+      begin match logOp(List.assoc ltoken (List.nth parsingtable state)) with
+      | Goto(to1) -> automaton parser inputs (to1 :: states) results
+      | _ -> ("parse failed: goto operation expected after reduce operation", results)
       end
     | Conflict(shift_to, reduce_grammar) ->
       let err = Buffer.create 80 in

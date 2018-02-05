@@ -3,50 +3,42 @@ open Token
 open Language
 open Parser
 
-let lex: lexDefinition = [
+let lex: Lexer.lexDefinition = [
   "",        Reg"\\(\\r\\n\\|\\r\\|\\n\\)+",None;
   "",        Reg"[ \\t]+",                  None;
-  "DIGITS",  Reg"[1-9][0-9]*",              None;
-  "PLUS",    Str"+",                        None;
-  "ASTERISK",Str"*",                        None;
-  "LPAREN",  Str"(",                        None;
-  "RPAREN",  Str")",                        None;
+  "NUM",     Reg"[1-9][0-9]*",              None;
+  "+",       Str"+",                        None;
+  "*",       Str"*",                        None;
   "INVALID", Reg".",                        None;
 ]
 
 let grammar: grammarDefinition = [
-  "EXP", ["EXP";"PLUS";"TERM"],     Some(fun([c0;_;c2],_) -> Obj.magic((Obj.magic c0) + (Obj.magic c2)));
-  "EXP", ["TERM"],                  Some(fun([c0],_) -> c0);
-  "TERM",["TERM";"ASTERISK";"ATOM"],Some(fun([c0;_;c2],_) -> Obj.magic((Obj.magic c0) * (Obj.magic c2)));
-  "TERM",["ATOM"],                  Some(fun([c0],_) -> c0);
-  "ATOM",["DIGITS"],                Some(fun([c0],_) -> Obj.magic(int_of_string c0));
-  "ATOM",["LPAREN";"EXP";"RPAREN"], Some(fun([_;c1;_],_) -> c1);
+  "E",["E";"+";"T"],  Some(fun([c0;_;c2],_) -> string_of_int((int_of_string c0) + (int_of_string c2)));
+  "E",["T"],          Some(fun([c0],_) -> c0);
+  "T",["T";"*";"NUM"],Some(fun([c0;_;c2],_) -> string_of_int((int_of_string c0) * (int_of_string c2)));
+  "T",["NUM"],        Some(fun([c0],_) -> c0);
 ]
 
-let language = (lex,grammar,"EXP")
+let language = (grammar,"E")
 
 let parsing_table : parsingTable = [
-  ["ATOM",Goto(1);"DIGITS",Shift(2);"EXP",Goto(3);"LPAREN",Shift(4);"TERM",Goto(5);];
-  ["ASTERISK",Reduce(3);"EOF",Reduce(3);"PLUS",Reduce(3);"RPAREN",Reduce(3);];
-  ["ASTERISK",Reduce(4);"EOF",Reduce(4);"PLUS",Reduce(4);"RPAREN",Reduce(4);];
-  ["EOF",Accept;"PLUS",Shift(6);];
-  ["ATOM",Goto(1);"DIGITS",Shift(2);"EXP",Goto(7);"LPAREN",Shift(4);"TERM",Goto(5);];
-  ["ASTERISK",Shift(8);"EOF",Reduce(1);"PLUS",Reduce(1);"RPAREN",Reduce(1);];
-  ["ATOM",Goto(1);"DIGITS",Shift(2);"LPAREN",Shift(4);"TERM",Goto(9);];
-  ["PLUS",Shift(6);"RPAREN",Shift(10);];
-  ["ATOM",Goto(11);"DIGITS",Shift(2);"LPAREN",Shift(4);];
-  ["ASTERISK",Shift(8);"EOF",Reduce(0);"PLUS",Reduce(0);"RPAREN",Reduce(0);];
-  ["ASTERISK",Reduce(5);"EOF",Reduce(5);"PLUS",Reduce(5);"RPAREN",Reduce(5);];
-  ["ASTERISK",Reduce(2);"EOF",Reduce(2);"PLUS",Reduce(2);"RPAREN",Reduce(2);];
+  ["NUM",Shift(2);                                            "E",Goto(1);"T",Goto(3);]; (* 0 *)
+  [               "+",Shift (4);              "EOF",Accept   ;                        ]; (* 1 *)
+  [               "+",Reduce(3);"*",Reduce(3);"EOF",Reduce(3);                        ]; (* 2 *)
+  [               "+",Reduce(1);"*",Shift (5);"EOF",Reduce(1);                        ]; (* 3 *)
+  ["NUM",Shift(2);                                                        "T",Goto(6);]; (* 4 *)
+  ["NUM",Shift(7);                                                                    ]; (* 5 *)
+  [               "+",Reduce(0);"*",Shift (5);"EOF",Reduce(0);                        ]; (* 6 *)
+  [               "+",Reduce(2);"*",Reduce(2);"EOF",Reduce(2);                        ]; (* 7 *)
 ]
 
 let test () =
-  let parser = Parser.create grammar parsing_table (Lexer.create lex) in
+  (*Parser.debug_mode := true;*)
+  let parser = Parser.create grammar ("",parsing_table) (Lexer.create lex) in
   "calc test" >::: [
-    "123"     >:: (fun _ -> assert(Obj.magic(parser "123"    ) = 123));
-    "1\n+ 1"  >:: (fun _ -> assert(Obj.magic(parser "1+1"    ) = 2));
-    "2*3+4"   >:: (fun _ -> assert(Obj.magic(parser "2*3+4"  ) = 10));
-    "2*(3+4)" >:: (fun _ -> assert(Obj.magic(parser "2*(3+4)") = 14));
+    "123"     >:: (fun _ -> assert(parser "123"     = "123"));
+    "1+2*3"   >:: (fun _ -> assert(parser "1+2*3"   = "7"));
+    "2*3+4"   >:: (fun _ -> assert(parser "2*3+4"   = "10"));
   ]
 
 let _ = run_test_tt_main(test())

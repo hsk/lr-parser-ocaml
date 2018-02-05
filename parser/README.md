@@ -76,11 +76,11 @@ Reduceの動作が一番複雑です:
       let rnum = List.length pattern in (*  *)
       let (children, results) = pop2 rnum results in (* 右辺の記号の数だけポップ *)
       let ((state::_) as states) = pop rnum states in (* 対応する規則の右辺の記号の数だけポップ *)
-      let child = callback(grammar_id, children) in (* callback 実行 *)
+      let result = callback(grammar_id, children) :: result in (* callbackを実行して結果をresultにpush *)
       (* 次は必ず Goto *)
       begin match List.assoc ltoken (List.nth parsingtable state) with
-      | Goto(to1) -> automaton parser inputs (to1 :: states) (child :: results)
-      | _ -> ("parse failed: goto operation expected after reduce operation", child :: results)
+      | Goto(to1) -> automaton parser inputs (to1 :: states) results (* ステータスにpush *)
+      | _ -> ("parse failed: goto operation expected after reduce operation", results)
       end
 ```
 
@@ -90,3 +90,39 @@ Reduceの動作が一番複雑です:
 ステータススタックに飛び先を設定します。
 
 コンフリクトはエラー処理をするだけなので省略します。
+
+## 実際の動作
+
+以下に文法と構文解析表および `1 + 2 * 3 $` 動作を示します。ここで、`($)` は`EOF` を表します。
+
+    文法
+      g0 E -> E + T         { $1 + $2 }
+      g1 E -> T             { $1 }
+      g2 T -> T * NUM       { $1 * $2 }
+      g3 T -> NUM           { $1 }
+    構文解析表
+      0  NUM : Shift 2                                            E : Goto 1  T : Goto 3
+      1                 + : Shift  4                $ : Accept                          
+      2                 + : Reduce 3  * : Reduce 3  $ : Reduce 3                        
+      3                 + : Reduce 1  * : Shift  5  $ : Reduce 1                        
+      4  NUM : Shift 2                                                        T : Goto 6
+      5  NUM : Shift 7                                                                  
+      6                 + : Reduce 0  * : Shift  5  $ : Reduce 0                        
+      7                 + : Reduce 2  * : Reduce 2  $ : Reduce 2                        
+    Start    in 1 + 2 * 3 $ st 0           res           開始時はstに0をセット
+    Shift  2 in + 2 * 3 $   st 2 0         res 1         stに2をpush resにinの1をpush
+    Reduce 3 in + 2 * 3 $   st 0           res 1         g3の右辺数1だけpop,callback結果をresにpush
+    Goto   3 in + 2 * 3 $   st 3 0         res 1         g3の左辺Tで表0を引いてGoto 3,stに3をpush
+    Reduce 1 in + 2 * 3 $   st 0           res 1         g1の右辺数1だけpop,callback結果をresにpush
+    Goto   1 in + 2 * 3 $   st 1 0         res 1         g1の左辺Eで表0を引いてGoto 1,stに1をpush
+    Shift  4 in 2 * 3 $     st 4 1 0       res + 1       stに4をpush resにinの+をpush
+    Shift  2 in * 3 $       st 2 4 1 0     res 2 + 1     stに2をpush resにinの2をpush
+    Reduce 3 in * 3 $       st 4 1 0       res 2 + 1     g3の右辺数1だけpop,callback結果をresにpush
+    Goto   6 in * 3 $       st 6 4 1 0     res 2 + 1     g3の左辺Tで表4を引いてGoto 6,stに6をpush
+    Shift  5 in 3 $         st 5 6 4 1 0   res * 2 + 1   stに5をpush resにinの*をpush
+    Shift  7 in $           st 7 5 6 4 1 0 res 3 * 2 + 1 stに7をpush resにinの3をpush
+    Reduce 2 in $           st 4 1 0       res 6 + 1     g2の右辺数3だけpop,callback結果をresにpush
+    Goto   6 in $           st 6 4 1 0     res 6 + 1     g2の左辺Tで表4を引いてGoto 6,stに6をpush
+    Reduce 0 in $           st 0           res 7         g0の右辺数3だけpop,callback結果をresにpush
+    Goto   1 in $           st 1 0         res 7         g0の左辺Eで表0を引いてGoto 1,stに1をpush
+    Accept   in $           st 1 0         res 7         入力が空$はAcceptなので完了

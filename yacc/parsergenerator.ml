@@ -65,6 +65,11 @@ let generate language : (string * parsingTable) =
       (table_type, lr_table)
     end
   end
+(* 言語定義から構文解析表および構文解析器を生成するパーサジェネレータ *)
+let generateLR1 language : (string * parsingTable) =
+  let db = genGrammarDB language in
+  let lr_dfa = generateLR1DFA db in
+  generateParsingTable db lr_dfa "LR1"
 
 (* 生成された構文解析表に衝突が発生しているかどうかを調べる *)
 let isConflicted (table_type, _): bool = table_type = "CONFLICTED"

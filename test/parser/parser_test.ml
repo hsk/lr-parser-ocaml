@@ -17,4 +17,15 @@ let test () =
       (*Printf.printf "%s\n" (Precompiler.exec_parsing_table parsing_table);*)
       assert(Obj.magic(parser "2*(3+4)") = 14)
     end;
+
+    "simple calc parsergenerate" >:: begin fun () ->
+      let grammar = [
+        "E", ["E";"+";"T"], None;
+        "E", ["T"],         None;
+        "T",["T";"*";"NUM"],None;
+        "T",["NUM"],        None;
+      ] in
+      let ((_,parsing_table) as table) = Parsergenerator.generateLR1 (grammar,"E") in
+      Printf.printf "%s\n%!" (Parser.show(parsing_table));
+    end;
   ]

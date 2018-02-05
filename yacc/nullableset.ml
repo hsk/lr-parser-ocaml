@@ -5,28 +5,27 @@ open Utils
 (* ある非終端記号から空列が導かれうるかどうかを判定する *)
 type nullableSet = S.t
 
-(* @param {GrammarDefinition} grammar 構文規則 *)
+(* 空列になりうる記号の集合 nulls を導出 *)
 let generateNulls grammar : nullableSet =
-  (* 制約条件を導出するために、*)
-  (* 空列になりうる記号の集合nullsを導出 *)
+  (* 右辺の記号の数が0の規則を持つ記号は空列になる *)
   let nulls = grammar |>
     List.filter(fun (_,pattern,_)->List.length pattern=0) |>
     List.map(fun (ltoken,_,_)->ltoken) |>
     S.of_list
   in
-  (* 右辺の記号の数が0の規則を持つ記号は空列になりうる *)
-  (* 変更が起きなくなるまでループする *)
+  (* さらに、空になる文法しか呼び出さない文法要素を追加する *)
+  (* 要素を追加したらもう一回調べ直す必要があるのでループ *)
   let rec loop nulls =
-    match grammar |> List.filter(fun (ltoken,pattern,_)->
-      not (S.mem ltoken nulls) && not (List.exists (fun a-> not (S.mem a nulls)) pattern)
-    ) with
-    | [] -> nulls
-    | a ->
-      loop (List.fold_right (fun (ltoken,_,_) nulls ->
-        S.add ltoken nulls
-      ) a nulls)
+    let add_grammer = grammar |> List.filter(fun (ltoken,pattern,_)-> (* 追加するのは *)
+      not (S.mem ltoken nulls) && (* nullsに含まれておらず *)
+      (* 右辺がすべてnullのもの。つまり、nullにならない要素が含まれないもの *)
+      not (List.exists (fun a-> not (S.mem a nulls)) pattern)
+    ) in
+    if add_grammer = [] then nulls else(* 加えるものがなくなったら終了 *)
+    (* 加える文法要素があれば、文法名を取り出し、追加してループします *)
+    loop (add_grammer|>(List.fold_left (fun nulls (ltoken,_,_) -> S.add ltoken nulls) nulls))
   in
   loop nulls
 
-(* 与えられた[[Token]]がNullableかどうかを調べる *)
+(* Token が Nullable かどうか *)
 let isNullable nulls token : bool = S.mem token nulls

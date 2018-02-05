@@ -4,7 +4,7 @@ all:
 		-I lexer lexer/token.ml lexer/lexer.ml \
 		-I lexer/test lexer/test/lexer_test.ml \
 		-I parser parser/language.ml parser/parser.ml \
-		-I yacc yacc/utils.ml yacc/nullableset.ml yacc/symboldiscriminator.ml yacc/firstset.ml \
+		-I yacc yacc/utils.ml yacc/symboldiscriminator.ml yacc/nullableset.ml yacc/firstset.ml \
 		   yacc/grammardb.ml yacc/closureitem.ml yacc/closureset.ml \
 		   yacc/dfagenerator.ml yacc/parsergenerator.ml \
 		-I precompiler precompiler/rule_parser.ml  precompiler/precompiler.ml \
@@ -13,8 +13,8 @@ all:
 		test/data/empty_language.ml \
 		test/data/language_language.ml \
 		test/data/sample_language.ml \
- 		test/yacc/nullableset_test.ml \
 		test/yacc/symboldiscriminator_test.ml \
+ 		test/yacc/nullableset_test.ml \
 		test/yacc/firstset_test.ml \
 		test/yacc/grammardb_test.ml \
 		test/yacc/closureitem_test.ml \

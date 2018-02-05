@@ -5,3 +5,4 @@ type tokenizedInput = token * any (* トークン名と、字句規則にマッ�
 type lexer = string -> tokenizedInput list
 
 let show_ts ts = "[" ^ String.concat ";" (List.map (fun t -> Printf.sprintf "%S" t) ts) ^ "]"
+let show_tokeninputs tis = "[" ^ String.concat ";" (List.map (fun (t,i) -> Printf.sprintf "%s" i) tis) ^ "]"

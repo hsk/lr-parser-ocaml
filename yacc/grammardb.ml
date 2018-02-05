@@ -69,7 +69,7 @@ let hasRuleId db id : bool = id >= -1 && id < rule_size(db)
 (* 非終端記号xに対し、それが左辺として対応する定義を得る *)
 (* 対応する定義が存在しない場合は空の配列を返す *)
 let findRules db x : (int * grammarRule) array =
-  if M.mem x db.rulemap then M.find x db.rulemap else [||]
+  try M.find x db.rulemap with _ -> [||]
 
 (* 規則idに対応した規則を返す *)
 (* -1が与えられた時は S' -> S $の規則を返す *)
