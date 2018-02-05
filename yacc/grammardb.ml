@@ -42,9 +42,7 @@ let initTokenMap grammar : int M.t =
 (* ある記号を左辺とするような構文ルールとそのidの対応を生成 *)
 let initDefMap grammar : (int * grammarRule) array M.t =
   let (_,rulemap) = List.fold_left(fun (i,(rulemap:(int * grammarRule) array M.t)) ((ltoken,_,_) as rule) ->
-    let r = [|i, rule|] in
-    let r = if M.mem ltoken rulemap then Array.append (M.find ltoken rulemap) r else r in
-    (i+1, M.add ltoken r rulemap)
+    (i+1, rulemap |> M.add_array ltoken (i, rule))
   ) (0,M.empty) grammar in
   rulemap
 

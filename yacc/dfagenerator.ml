@@ -8,96 +8,73 @@ type edge = int M.t
 type node = {closure: closureSet; edge: edge}
 type dfa = node list
 
-(* 既存のClosureSetから新しい規則を生成し、対応する記号ごとにまとめる *)
-let generateNewClosureSets db closureset: closureSet M.t =
-  (* 規則から新しい規則を生成し、対応する記号ごとにまとめる *)
-  let tmp = Array.fold_left (fun tmp i ->
-    let (_,pattern,_) = getRuleById db i.rule_id in
-    if i.dot_index = List.length pattern then tmp else (* .が末尾にある場合はスキップ *)
-    let new_ci = genClosureItem db i.rule_id (i.dot_index + 1) i.lookaheads in
-    let edge_label = List.nth pattern i.dot_index in
-    let cis = if M.mem edge_label tmp then M.find edge_label tmp else [||] in
-    M.add edge_label (Array.append cis [|new_ci|]) tmp
-  ) M.empty (closureset.items) in
-  (* ClosureItemの配列からClosureSetに変換 *)
-  M.fold_left (fun result (edge_label, cis) ->
-    M.add edge_label (genClosureSet db cis) result
-  ) M.empty tmp
-
-(* 与えられたnodeと全く同じnodeがある場合、そのindexを返す *)
-(* 見つからなければ-1を返す *)
-let getIndexOfDuplicatedNode dfa new_node: int =
-  let rec loop i =
-    if (Array.length dfa) <= i then -1 else
-    if Closureset.isSameLR1 new_node.closure dfa.(i).closure then i else
-    loop (i+1)
-  in loop 0
-
 (* DFAの生成 *)
 let generateLR1DFA db : dfa =
-  let rec loop1 i dfa flg =
-    let closure = dfa.(i).closure in
-    (* 新しいノードを生成する *)
-    let (dfa,_,flg) = M.fold_left(fun (dfa,edge,flg) (edge_label, cs) ->
-      let new_node = {closure=cs; edge=M.empty} in
-      (* 既存のNodeのなかに同一のClosureSetを持つものがないか調べる *)
-      let index = getIndexOfDuplicatedNode dfa new_node in
-      let (dfa,index_to,flg) = if index > -1 then (* 既存の状態と規則が重複する *)
-        (dfa,index,flg)
-      else (Array.append dfa [|new_node|], Array.length dfa,true)
-      in
-      (* 辺を追加する *)
-      if M.mem edge_label edge then (dfa,edge,flg) else begin
-        let edge = M.add edge_label index_to edge in
-        dfa.(i) <- {closure; edge}; (* DFAを更新 *)
-        (dfa,edge,true)
-      end
-    ) (dfa,dfa.(i).edge,flg) (generateNewClosureSets db closure) in
-    if i+1 < Array.length dfa then loop1 (i+1) dfa flg else (dfa,flg)
+  (* 既存のClosureSetから新しい規則を生成し、対応する記号ごとにまとめる *)
+  let generateNewClosureSets cs: closureSet M.t =
+    (* 規則から新しい規則を生成し、対応する記号ごとにまとめる *)
+    cs.items |> (M.empty |> Array.fold_left (fun cismap ci ->
+      let (_,pattern,_) = getRuleById db ci.rule_id in
+      if ci.dot_index = List.length pattern then cismap else (* .が末尾にある場合はスキップ *)
+      let label = List.nth pattern ci.dot_index in
+      cismap |> M.add_array label (genClosureItem db ci.rule_id (ci.dot_index + 1) ci.lookaheads)
+    )) |> M.map (genClosureSet db) (* ClosureItemの配列からClosureSetに変換 *)
+  in
+  let rec updateDFA i (dfa, flg) =
+    if i >= Array.length dfa then (dfa,flg) else updateDFA (i+1) (
+      (* 新しいノードを生成する *)
+      generateNewClosureSets dfa.(i).closure |>
+      ((dfa,flg) |> M.fold_left(fun (dfa,flg) (label, cs) ->
+        let new_node = {closure=cs; edge=M.empty} in
+        (* 既存のNodeのなかに同一のClosureSetを持つものがないか調べる *)
+        let (index,dfa,flg) =
+          try (Array.findIndex (fun v -> Closureset.isSameLR1 new_node.closure v.closure) dfa,dfa,flg)
+          with _ -> (Array.length dfa,Array.add dfa new_node, true)
+        in
+        (* 辺の追加 *)
+        if M.mem label dfa.(i).edge then (dfa,flg) else begin
+          dfa.(i) <- {dfa.(i) with edge = M.add label index dfa.(i).edge}; (* DFAを更新 *)
+          (dfa,true)
+        end
+      ))
+    )
   in
   (* 変更がなくなるまでループ *)
   let rec loop dfa =
-    match loop1 0 dfa false with
+    match updateDFA 0 (dfa, false) with
     | dfa,true -> loop dfa
-    | dfa,_ -> dfa
+    | dfa,_ -> Array.to_list dfa
   in
-  let ci = genClosureItem db (-1) 0 [|"EOF"|] in
-  let cs = genClosureSet db [|ci|] in
-  Array.to_list (loop [|{closure = cs; edge = M.empty}|])
+  loop [| {
+    closure = genClosureSet db [|genClosureItem db (-1) 0 [|"EOF"|]|];
+    edge = M.empty
+  } |]
 
 (* LR(1)オートマトンの先読み部分をマージして、LALR(1)オートマトンを作る *)
 let generateLALR1DFA db lr_dfa : dfa =
-  let merge_to = ref MI.empty in (* マージ先への対応関係を保持する *)
-  let rec findIndex index =
-    if not (MI.mem index !merge_to) then index else (
-      let i2 = findIndex (MI.find index !merge_to) in
-      merge_to := MI.add index i2 !merge_to; (* 対応表を更新 *)
-      i2
-    )
-  in
   let base = Array.of_list lr_dfa in
-  for i = 0 to Array.length base - 1 do
-    if MI.mem i !merge_to then () else
-    for ii = (i + 1) to Array.length base - 1 do
-      if MI.mem ii !merge_to then () else
+  let merge_to = MI.empty|>(0|>let rec mergeLoop1 i merge_to =
+  if i >= Array.length base then merge_to else mergeLoop1 (i+1) begin
+    if MI.mem i merge_to then merge_to else
+    merge_to|>((i+1)|>let rec mergeLoop2 ii merge_to =
+    if ii >= Array.length base then merge_to else mergeLoop2 (ii+1) begin
+      if MI.mem ii merge_to then merge_to else
       if Closureset.isSameLR0 base.(i).closure base.(ii).closure then begin
         base.(i) <- {closure=Closureset.mergeLA(db,base.(i).closure, base.(ii).closure); edge= base.(i).edge};
-        merge_to := MI.add ii i !merge_to
-      end
-    done
-  done;
-  (* 削除した部分を配列から抜き取る *)
-  let (_,_,fix,nodes) = Array.fold_left (fun (i,ii,fix,nodes) node ->
-    if MI.mem i !merge_to then (i+1,ii,ii::fix,nodes)
-    else (i+1,ii+1,ii::fix,node::nodes)
-  ) (0,0,[],[]) base in
-  let fix = Array.of_list (List.rev fix) in
-  (* fixのうち、ノードが削除された部分を正しい対応で埋める *)
-  MI.iter (fun i to1 -> fix.(i) <- fix.(findIndex to1)) !merge_to;
-  (* インデックスの対応表をもとに辺情報を書き換える *)
-  List.fold_left (fun result node ->
-    let edge = M.fold_left (fun edge (token, node_index) ->
-      M.add token fix.(node_index) edge
-    ) M.empty node.edge in
-    {closure=node.closure; edge} :: result
-  ) [] nodes
+        MI.add ii i merge_to
+      end else merge_to
+    end in mergeLoop2)
+  end in mergeLoop1) in
+  let rec find_merge_to index =
+    try find_merge_to (MI.find index merge_to) with _ -> index
+  in
+  (* マージした部分を配列から抜き取る *)
+  let (_,_,o2n,nodes) = Array.fold_left (fun (o,n,o2n,nodes) node ->
+    try (o+1,n,o2n|>MI.add o (o2n|>MI.find(find_merge_to o)),nodes) (* マージ先oをo2nに保存する *)
+    with _ -> (o+1,n+1,o2n|>MI.add o n,node::nodes) (* 検索失敗時はマージされていない *)
+  ) (0,0,MI.empty,[]) base in
+  (* o2n対応表をもとに辺情報を書き換える *)
+  nodes|>([]|>List.fold_left (fun ls node -> {
+    closure=node.closure;
+    edge=node.edge |> M.map (fun o -> MI.find o o2n)
+  }::ls))

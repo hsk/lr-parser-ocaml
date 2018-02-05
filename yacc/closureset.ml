@@ -27,55 +27,44 @@ let sort cis =
 (* クロージャー展開を行う *)
 let expandClosure db cis =
   (* ClosureItemをlookaheadsごとに分解する *)
-  let cis = sort(Array.fold_left(fun cis ci ->
-    Array.append cis (separateByLookAheads db ci)
-  ) [||] cis) in
+  let cis = cis|>Array.map(separateByLookAheads db)|>Array.to_list|>Array.concat|>sort in
   (* 展開処理中はClosureItemのlookaheadsの要素数を常に1 *)
-
-  let slice arr s e = Array.sub arr s (e - s) in
-
   (* 先読み記号を導出 *)
   let expand db cis ci ts follow =
     (* ci.lookaheadsは要素数1 *)
-    let ts = Array.append (slice ts (ci.dot_index + 1) (Array.length ts)) [|ci.lookaheads.(0)|] in
+    let ts = Array.add (Array.slice ts (ci.dot_index + 1) (Array.length ts)) ci.lookaheads.(0) in
     let ts = List.sort (fun t1 t2 ->
       getTokenId db t1 - getTokenId db t2
     ) (S.elements (getFromList db.first (Array.to_list ts))) in
-
     (* follow を左辺にもつ全ての規則を、先読み記号を付与して追加 *)
     findRules db follow |> Array.fold_left (fun cis (id,_) ->
       List.fold_left (fun cis t ->
         let new_ci = genClosureItem db id 0 [| t |] in
         if Array.exists(fun ci -> Closureitem.isSameLR1 new_ci ci) cis then cis
         (* 重複がなければ新しいアイテムを追加する *)
-        else Array.append cis [| new_ci |]
+        else Array.add cis new_ci
       ) cis ts
     ) cis
   in
   (* アイテム追加しながら変更がなくなるまで繰り返す *)
   let rec expandLoop db i cis =
-    if i >= Array.length cis then cis else
-    let ci = cis.(i) in
-    let ts = getRuleById db ci.rule_id |> (fun (_,ts,_) -> Array.of_list ts) in
-
-    (* .が末尾にある *)
-    if ci.dot_index >= Array.length ts then expandLoop db (i+1) cis else
-    let follow = ts.(ci.dot_index) in
-  
-    (* .の次の記号が非終端記号以外 *)
-    if not (isNonterminalSymbol db.symbols follow) then expandLoop db (i+1) cis else
-  
-    (* クロージャー展開を行う *)
-    expandLoop db (i+1) (expand db cis ci ts follow)
+    if i >= Array.length cis then cis else expandLoop db (i+1) (
+      let ci = cis.(i) in
+      let ts = getRuleById db ci.rule_id |> (fun (_,ts,_) -> Array.of_list ts) in
+      if ci.dot_index >= Array.length ts then cis else (* .が末尾にある *)
+      let follow = ts.(ci.dot_index) in
+      if isNonterminalSymbol db.symbols follow then (* .の次の記号が非終端記号 *)
+        expand db cis ci ts follow (* クロージャー展開を行う *)
+      else cis
+    )
   in
-  let cis = sort(expandLoop db 0 cis) in
-
+  let cis = expandLoop db 0 cis |> sort in
   (* ClosureItemの先読み部分をマージする *)
   let (_,cis,_) = Array.fold_left (fun (i,results,lookaheads) ci ->
-    let lookaheads = Array.append lookaheads [|ci.lookaheads.(0)|] in
+    let lookaheads = Array.add lookaheads ci.lookaheads.(0) in
     if i < Array.length cis - 1 && Closureitem.isSameLR0 ci cis.(i + 1) (* 次が同じか？ *)
     then (i+1, results, lookaheads) (* 続け、違う時は追加する *)
-    else (i+1, Array.append results [|genClosureItem db ci.rule_id ci.dot_index lookaheads|], [||])
+    else (i+1, Array.add results (genClosureItem db ci.rule_id ci.dot_index lookaheads), [||])
     ) (0, [||], [||]) cis in
   sort(cis)
 
