@@ -115,20 +115,20 @@ Reduceの動作が一番複雑です:
 
 動作
 
-            in 1 + 2 * 3 $ st 0           res            開始時はstに0をセット                      次は s0とinのtop NUM から Shift 2
-  Shift  2  in + 2 * 3 $   st 2 0         res 1          stに2をpush resにinの1をpush               次は s2とinのtop + から Reduce 3
-  Reduce 3  in + 2 * 3 $   st 0           res 1          g3の右辺数1だけpop,callback結果をresにpush 次は g3の左辺Tで表0を引いてGoto 3
-  Goto   3  in + 2 * 3 $   st 3 0         res 1          stに3をpush                                次は s3とinのtop + から Reduce 1
-  Reduce 1  in + 2 * 3 $   st 0           res 1          g1の右辺数1だけpop,callback結果をresにpush 次は g1の左辺Eで表0を引いてGoto 1
-  Goto   1  in + 2 * 3 $   st 1 0         res 1          stに1をpush                                次は s1とinのtop + から Shift 4
-  Shift  4  in 2 * 3 $     st 4 1 0       res + 1        stに4をpush resにinの+をpush               次は s4とinのtop NUM から Shift 2
-  Shift  2  in * 3 $       st 2 4 1 0     res 2 + 1      stに2をpush resにinの2をpush               次は s2とinのtop * から Reduce 3
-  Reduce 3  in * 3 $       st 4 1 0       res 2 + 1      g3の右辺数1だけpop,callback結果をresにpush 次は g3の左辺Tで表4を引いてGoto 6
-  Goto   6  in * 3 $       st 6 4 1 0     res 2 + 1      stに6をpush                                次は s6とinのtop * から Shift 5
-  Shift  5  in 3 $         st 5 6 4 1 0   res * 2 + 1    stに5をpush resにinの*をpush               次は s5とinのtop NUM から Shift 7
-  Shift  7  in $           st 7 5 6 4 1 0 res 3 * 2 + 1  stに7をpush resにinの3をpush               次は s7とinのtop $ から Reduce 2
-  Reduce 2  in $           st 4 1 0       res 6 + 1      g2の右辺数3だけpop,callback結果をresにpush 次は g2の左辺Tで表4を引いてGoto 6
-  Goto   6  in $           st 6 4 1 0     res 6 + 1      stに6をpush                                次は s6とinのtop $ から Reduce 3
-  Reduce 0  in $           st 0           res 7          g0の右辺数3だけpop,callback結果をresにpush 次は g0の左辺Eで表0を引いてGoto 1
-  Goto   1  in $           st 1 0         res 7          stに1をpush                                次は s1とinのtop $ から Accept
-  Accept    in $           st 1 0         res 7          完了                                       
+              in 1 + 2 * 3 $ st 0           res            開始時はstに0をセット                      次は s0とinのtop NUM から Shift 2
+    Shift  2  in + 2 * 3 $   st 2 0         res 1          stに2をpush resにinの1をpush               次は s2とinのtop + から Reduce 3
+    Reduce 3  in + 2 * 3 $   st 0           res 1          g3の右辺数1だけpop,callback結果をresにpush 次は g3の左辺Tで表0を引いてGoto 3
+    Goto   3  in + 2 * 3 $   st 3 0         res 1          stに3をpush                                次は s3とinのtop + から Reduce 1
+    Reduce 1  in + 2 * 3 $   st 0           res 1          g1の右辺数1だけpop,callback結果をresにpush 次は g1の左辺Eで表0を引いてGoto 1
+    Goto   1  in + 2 * 3 $   st 1 0         res 1          stに1をpush                                次は s1とinのtop + から Shift 4
+    Shift  4  in 2 * 3 $     st 4 1 0       res + 1        stに4をpush resにinの+をpush               次は s4とinのtop NUM から Shift 2
+    Shift  2  in * 3 $       st 2 4 1 0     res 2 + 1      stに2をpush resにinの2をpush               次は s2とinのtop * から Reduce 3
+    Reduce 3  in * 3 $       st 4 1 0       res 2 + 1      g3の右辺数1だけpop,callback結果をresにpush 次は g3の左辺Tで表4を引いてGoto 6
+    Goto   6  in * 3 $       st 6 4 1 0     res 2 + 1      stに6をpush                                次は s6とinのtop * から Shift 5
+    Shift  5  in 3 $         st 5 6 4 1 0   res * 2 + 1    stに5をpush resにinの*をpush               次は s5とinのtop NUM から Shift 7
+    Shift  7  in $           st 7 5 6 4 1 0 res 3 * 2 + 1  stに7をpush resにinの3をpush               次は s7とinのtop $ から Reduce 2
+    Reduce 2  in $           st 4 1 0       res 6 + 1      g2の右辺数3だけpop,callback結果をresにpush 次は g2の左辺Tで表4を引いてGoto 6
+    Goto   6  in $           st 6 4 1 0     res 6 + 1      stに6をpush                                次は s6とinのtop $ から Reduce 3
+    Reduce 0  in $           st 0           res 7          g0の右辺数3だけpop,callback結果をresにpush 次は g0の左辺Eで表0を引いてGoto 1
+    Goto   1  in $           st 1 0         res 7          stに1をpush                                次は s1とinのtop $ から Accept
+    Accept    in $           st 1 0         res 7          完了                                       
