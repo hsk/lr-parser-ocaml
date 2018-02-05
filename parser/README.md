@@ -98,32 +98,32 @@ Reduceの動作が一番複雑です:
     文法
     g0 E -> E + T         { $1 + $2 }
     g1 E -> T             { $1 }
-    g2 T -> T * NUM       { $1 * $2 }
-    g3 T -> NUM           { $1 }
+    g2 T -> T * N         { $1 * $2 }
+    g3 T -> N             { $1 }
     構文解析表
-    s0  NUM : Shift 2                                            E : Goto 1  T : Goto 3
-    s1                 + : Shift  4                $ : Accept                          
-    s2                 + : Reduce 3  * : Reduce 3  $ : Reduce 3                        
-    s3                 + : Reduce 1  * : Shift  5  $ : Reduce 1                        
-    s4  NUM : Shift 2                                                        T : Goto 6
-    s5  NUM : Shift 7                                                                  
-    s6                 + : Reduce 0  * : Shift  5  $ : Reduce 0                        
-    s7                 + : Reduce 2  * : Reduce 2  $ : Reduce 2                        
+    s0  N : Shift 2                                            E : Goto 1  T : Goto 3
+    s1               + : Shift  4                $ : Accept                          
+    s2               + : Reduce 3  * : Reduce 3  $ : Reduce 3                        
+    s3               + : Reduce 1  * : Shift  5  $ : Reduce 1                        
+    s4  N : Shift 2                                                        T : Goto 6
+    s5  N : Shift 7                                                                  
+    s6               + : Reduce 0  * : Shift  5  $ : Reduce 0                        
+    s7               + : Reduce 2  * : Reduce 2  $ : Reduce 2                        
     命令      in           st           res       動作                                     次の命令
-              1 + 2 * 3 $  0                      開始時はstに0をセット,                   s0とinのtop NUM から
-    Shift  2  + 2 * 3 $    2 0          1         stに2をpush,resにinの1をpush,            s2とinのtop + から
-    Reduce 3  + 2 * 3 $    0            1         g3の右辺数1だけpop,callback値をresにpush,s0とg3の左辺T から
-    Goto   3  + 2 * 3 $    3 0          1         stに3をpush,                             s3とinのtop + から
-    Reduce 1  + 2 * 3 $    0            1         g1の右辺数1だけpop,callback値をresにpush,s0とg1の左辺E から
-    Goto   1  + 2 * 3 $    1 0          1         stに1をpush,                             s1とinのtop + から
-    Shift  4  2 * 3 $      4 1 0        + 1       stに4をpush,resにinの+をpush,            s4とinのtop NUM から
-    Shift  2  * 3 $        2 4 1 0      2 + 1     stに2をpush,resにinの2をpush,            s2とinのtop * から
-    Reduce 3  * 3 $        4 1 0        2 + 1     g3の右辺数1だけpop,callback値をresにpush,s4とg3の左辺T から
-    Goto   6  * 3 $        6 4 1 0      2 + 1     stに6をpush,                             s6とinのtop * から
-    Shift  5  3 $          5 6 4 1 0    * 2 + 1   stに5をpush,resにinの*をpush,            s5とinのtop NUM から
-    Shift  7  $            7 5 6 4 1 0  3 * 2 + 1 stに7をpush resにinの3をpush,            s7とinのtop $ から
-    Reduce 2  $            4 1 0        6 + 1     g2の右辺数3だけpop,callback値をresにpush,s4とg2の左辺T から
-    Goto   6  $            6 4 1 0      6 + 1     stに6をpush,                             s6とinのtop $ から
-    Reduce 0  $            0            7         g0の右辺数3だけpop,callback値をresにpush,s0とg0の左辺E から
-    Goto   1  $            1 0          7         stに1をpush,                             s1とinのtop $ から
-    Accept    $            1 0          7         完了                                       
+              1 + 2 * 3 $  0                      開始時はstに0をセット,                   inのtop Nとs0から
+    Shift  2  + 2 * 3 $    2 0          1         stに2をpush,resにinの1をpush,            inのtop +とs2から
+    Reduce 3  + 2 * 3 $    0            1         g3の右辺数1だけpop,callback値をresにpush,g3の左辺Tとs0から
+    Goto   3  + 2 * 3 $    3 0          1         stに3をpush,                             inのtop +とs3から
+    Reduce 1  + 2 * 3 $    0            1         g1の右辺数1だけpop,callback値をresにpush,g1の左辺Eとs0から
+    Goto   1  + 2 * 3 $    1 0          1         stに1をpush,                             inのtop +とs1から
+    Shift  4  2 * 3 $      4 1 0        + 1       stに4をpush,resにinの+をpush,            inのtop Nとs4から
+    Shift  2  * 3 $        2 4 1 0      2 + 1     stに2をpush,resにinの2をpush,            inのtop *とs2から
+    Reduce 3  * 3 $        4 1 0        2 + 1     g3の右辺数1だけpop,callback値をresにpush,g3の左辺Tとs4から
+    Goto   6  * 3 $        6 4 1 0      2 + 1     stに6をpush,                             inのtop *とs6から
+    Shift  5  3 $          5 6 4 1 0    * 2 + 1   stに5をpush,resにinの*をpush,            inのtop Nとs5から
+    Shift  7  $            7 5 6 4 1 0  3 * 2 + 1 stに7をpush resにinの3をpush,            inのtop $とs7から
+    Reduce 2  $            4 1 0        6 + 1     g2の右辺数3だけpop,callback値をresにpush,g2の左辺Tとs4から
+    Goto   6  $            6 4 1 0      6 + 1     stに6をpush,                             inのtop $とs6から
+    Reduce 0  $            0            7         g0の右辺数3だけpop,callback値をresにpush,g0の左辺Eとs0から
+    Goto   1  $            1 0          7         stに1をpush,                             inのtop $とs1から
+    Accept    $            1 0          7         完了                                     
