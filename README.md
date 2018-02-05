@@ -1,7 +1,7 @@
 # LRパーサジェネレータ
 
 これは何？
-LR1 LALR1 のパーサジェネレータです。元のTypeScriptのパーサジェネレータ http://tatamo.81.la/blog/2016/12/22/lr-parser-generator-implementation/ を Scala に移植した後に OCaml に移植したものです。
+LR1 LALR1 のパーサジェネレータです。元のTypeScriptのパーサジェネレータ http://tatamo.81.la/blog/tags/parser-generator/ を Scala に移植した後に OCaml に移植したものです。
 リファクタリングしてできるだけわかりやすくするようにしています。
 
 目標は、字句解析と、パーサと、パーサジェネレータを分離してLR構文解析を理解しやすくすることです。
