@@ -36,9 +36,10 @@ let test () =
   (*Parser.debug_mode := true;*)
   let parser = Parser.create grammar ("",parsing_table) (Lexer.create lex) in
   "calc test" >::: [
-    "123"     >:: (fun _ -> assert(parser "123"     = "123"));
-    "1+2*3"   >:: (fun _ -> assert(parser "1+2*3"   = "7"));
+    "8"       >:: (fun _ -> assert(parser "8"       = "8"));
     "2*3+4"   >:: (fun _ -> assert(parser "2*3+4"   = "10"));
+    "1+2*3"   >:: (fun _ -> assert(parser "1+2*3"   = "7"));
+    "1+2"     >:: (fun _ -> assert(parser "1+2"     = "3"));
   ]
 
 let _ = run_test_tt_main(test())
