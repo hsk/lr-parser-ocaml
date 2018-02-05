@@ -40,11 +40,13 @@ let rec pop num stack = let (_,stack) = pop2 num stack in stack
 
 let debug_mode = ref false
 
-let debug_out str = if !debug_mode then Printf.printf "%s\n%!" str
+let debug_out str = Printf.printf "%s\n%!" str
 let log fmt = Printf.kprintf (fun str -> debug_out str) fmt
 let logState(i,s,r) =
+  if !debug_mode then
   log "%s %s %s" (show_tokeninputs i) (show_ls (List.map string_of_int s)) (show_ls r)
-let logOp op = log "%s" (show_op op); op
+let logOp op =
+  if !debug_mode then log "%s" (show_op op); op
 (* 構文解析ステートマシン *)
 (* states 現在読んでいる構文解析表の状態番号を置くスタック *)
 (* results 解析中のASTノードを置くスタック *)
