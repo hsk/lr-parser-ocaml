@@ -6,7 +6,7 @@ open Closureset
 
 let test () =
   let grammardb = genGrammarDB(Sample_language.language) in
-  let cs = genClosureSet grammardb [| genClosureItem grammardb (-1) 0 ["EOF"] |] in
+  let cs = genClosureSet grammardb [ genClosureItem grammardb (-1) 0 ["EOF"] ] in
   (*
   S' -> . S [$]
   S -> . E [$]
@@ -18,7 +18,7 @@ let test () =
   T -> . [SEMICOLON SEPARATE]
   HOGE -> . ID [$]
   *)
-  let expanded = [| 
+  let expanded = [
     genClosureItem grammardb (-1) 0 ["EOF"];
     genClosureItem grammardb 0 0 ["EOF"];
     genClosureItem grammardb 1 0 ["EOF"];
@@ -28,8 +28,8 @@ let test () =
     genClosureItem grammardb 5 0 [ "SEMICOLON"; "SEPARATE" ];
     genClosureItem grammardb 6 0 [ "SEMICOLON"; "SEPARATE" ];
     genClosureItem grammardb 7 0 ["EOF"];
-  |] in
-  let expanded_shuffled = [| 
+  ] in
+  let expanded_shuffled = [
     genClosureItem grammardb 5 0 [ "SEMICOLON"; "SEPARATE" ];
     genClosureItem grammardb 2 0 ["EOF"];
     genClosureItem grammardb 1 0 ["EOF"];
@@ -39,12 +39,12 @@ let test () =
     genClosureItem grammardb (-1) 0 ["EOF"];
     genClosureItem grammardb 3 0 [ "SEMICOLON"; "SEPARATE" ];
     genClosureItem grammardb 6 0 [ "SEPARATE"; "SEMICOLON" ];
-  |] in
+  ] in
 
   "ClosureSet test" >::: [
     "Closure{S' -> . S [$]}" >::: [
       "ClosureSet size" >:: begin fun () ->
-        assert(Array.length cs.items = 9)
+        assert(List.length cs.items = 9)
       end;
       "ClosureSet array" >:: begin fun () ->
         assert(cs.items = expanded)
@@ -60,7 +60,7 @@ let test () =
         end;
       ];
       "ClosureSet#include" >:: begin fun () ->
-        expanded |> Array.iter (fun ci -> assert(Closureset.includes(cs,ci)))
+        expanded |> List.iter (fun ci -> assert(Closureset.includes(cs,ci)))
       end;
       "ClosureSet#include invalid inputs" >:: begin fun () ->
         Closureset.includes(cs,genClosureItem grammardb 0 1 ["EOF"]) |> ignore;
@@ -76,11 +76,11 @@ let test () =
       "invalid ClosureSet" >::: [
         "invalid grammar id" >:: begin fun () ->
           assert_raises (Failure "invalid grammar id") (fun () ->
-            genClosureSet grammardb [| genClosureItem grammardb (-2) 0 ["EOF"] |])
+            genClosureSet grammardb [ genClosureItem grammardb (-2) 0 ["EOF"] ])
         end;
         "invalid dot position" >:: begin fun () ->
           assert_raises (Failure "dot index out of range") (fun () ->
-            genClosureSet grammardb [| genClosureItem grammardb 0 (-1) ["EOF"] |])
+            genClosureSet grammardb [ genClosureItem grammardb 0 (-1) ["EOF"] ])
         end;
       ];
     ];
@@ -88,21 +88,21 @@ let test () =
 
 let test2 () =
   let grammardb = genGrammarDB(Empty_language.language) in
-  let cs = genClosureSet grammardb [| genClosureItem grammardb (-1) 0 ["EOF"] |] in
-  let expanded = [| 
+  let cs = genClosureSet grammardb [ genClosureItem grammardb (-1) 0 ["EOF"] ] in
+  let expanded = [
     genClosureItem grammardb (-1) 0 ["EOF"];
     genClosureItem grammardb 0 0 ["EOF"];
-  |] in
+  ] in
   "ClosureSet test2" >::: [
     "empty grammar" >::: [
       "ClosureSet size" >:: begin fun () ->
-        assert(Array.length cs.items = 2)
+        assert(List.length cs.items = 2)
       end;
       "ClosureSet array" >:: begin fun () ->
         assert(cs.items = expanded)
       end;
       "ClosureSet#include" >:: begin fun () ->
-        expanded |> Array.iter (fun ci -> assert(Closureset.includes(cs,ci)))
+        expanded |> List.iter (fun ci -> assert(Closureset.includes(cs,ci)))
       end;
     ];
   ]

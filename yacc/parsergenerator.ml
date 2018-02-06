@@ -20,7 +20,7 @@ let generateParsingTable db dfa table_type : (string * parsingTable) =
       else table_row
     ) M.empty node.edge in
     (* Closureをもとにacceptとreduceオペレーションを追加していく *)
-    let table_row = Array.fold_left (fun table_row (item:closureItem) ->
+    let table_row = List.fold_left (fun table_row (item:closureItem) ->
       let (_,pattern,_) = getRuleById db item.rule_id in
       (* 規則末尾が.でないならスキップ *)
       if item.dot_index <> List.length pattern then table_row else

@@ -15,8 +15,8 @@ let merge_item db ci1 ci2 =
 let merge_set db cs1 cs2: Closureset.closureSet =
   if not (Closureset.isSameLR0 cs1 cs2) then failwith "null" else (* LR0部分が違う *)
   if Closureset.isSameLR1 cs1 cs2 then cs1 else (* LR1部分まで同じ *)
-  let a1, a2 = cs1.Closureset.items, cs2.Closureset.items in
-  Closureset.genClosureSet db (Array.mapi (fun i a1 -> merge_item db a1 a2.(i)) a1)
+  Closureset.genClosureSet db (List.map2 (fun ci1 ci2 ->
+    merge_item db ci1 ci2) cs1.Closureset.items cs2.Closureset.items)
 
 (* LR(1)オートマトンの先読み部分をマージして、LALR(1)オートマトンを作る *)
 let generateLALR1DFA db lr_dfa : dfa =

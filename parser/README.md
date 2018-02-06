@@ -73,8 +73,8 @@ Reduceの動作が一番複雑です:
 ```
     | Reduce(grammar_id) ->
       let (ltoken,pattern,_) = List.nth grammar grammar_id in (* 文法表を参照 *)
-      let rnum = List.length pattern in (*  *)
-      let (children, results) = pop2 rnum results in (* 右辺の記号の数だけポップ *)
+      let rnum = List.length pattern in
+      let (children, results) = splitAt rnum results in (* 右辺の記号の数だけポップ *)
       let ((state::_) as states) = pop rnum states in (* 対応する規則の右辺の記号の数だけポップ *)
       let result = callback(grammar_id, children) :: result in (* callbackを実行して結果をresultにpush *)
       (* 次は必ず Goto *)

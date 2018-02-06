@@ -30,13 +30,13 @@ let show (p:parsingTable) = show_ls (List.map show1 p)
 type parserCallback = grammarDefinition -> (int * any list) -> any
 type parser = (grammarDefinition * parsingTable * parserCallback)
 
-let rec drop = function
+let rec splitAt0 = function
   | (0, acc, res) -> (acc, res)
-  | (n, acc, a :: res) -> drop (n - 1, a::acc, res)
+  | (n, acc, a :: res) -> splitAt0 (n - 1, a::acc, res)
   | _ -> failwith "stack is empty"
 
-let rec pop2 num stack = drop (num,[], stack)
-let rec pop num stack = let (_,stack) = pop2 num stack in stack
+let rec splitAt num stack = splitAt0 (num, [], stack)
+let rec pop num stack = let (_,stack) = splitAt num stack in stack
 
 let debug_mode = ref false
 
@@ -61,7 +61,7 @@ let rec automaton parser inputs states results =
     | Reduce(grammar_id) ->
       let (ltoken,pattern,_) = List.nth grammar grammar_id in
       let rnum = List.length pattern in
-      let (children, results) = pop2 rnum results in  (* 右辺の記号の数だけポップ *)
+      let (children, results) = splitAt rnum results in  (* 右辺の記号の数だけポップ *)
       let ((state::_) as states) = pop rnum states in (* 対応する規則の右辺の記号の数だけポップ *)
       let results = callback(grammar_id, children) :: results in (* callback 実行 *)
       logState(inputs,states,results);
