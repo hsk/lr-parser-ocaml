@@ -25,7 +25,7 @@ let generateParsingTable db dfa table_type : (string * parsingTable) =
       (* 規則末尾が.でないならスキップ *)
       if item.dot_index <> List.length pattern then table_row else
       if item.rule_id = -1 then M.add "EOF" Accept table_row else
-      Array.fold_left(fun table_row label ->
+      List.fold_left(fun table_row label ->
         (* 既に同じ記号でオペレーションが登録されていないか確認 *)
         if not (M.mem label table_row) then M.add label (Reduce(item.rule_id)) table_row
         else begin (* コンフリクトが発生 *)
@@ -42,7 +42,7 @@ let generateParsingTable db dfa table_type : (string * parsingTable) =
           M.add label conflicted table_row
         end
       ) table_row item.lookaheads
-    ) table_row (node.closure.items) in
+    ) table_row node.closure.items in
     M.bindings table_row
   in
   let table = dfa |> List.map dfa_to_table_element in

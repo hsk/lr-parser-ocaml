@@ -37,7 +37,7 @@ let rec updateDFA db i (dfa, flg) =
 
 (* DFAの生成 *)
 let generateLR1DFA db : dfa =
-  [| { closure = genClosureSet db [|genClosureItem db (-1) 0 [|"EOF"|]|]; edge = M.empty} |] |>
+  [| { closure = genClosureSet db [|genClosureItem db (-1) 0 ["EOF"]|]; edge = M.empty} |] |>
   (* 変更がなくなるまでループ *)
   let rec loop dfa =
     match updateDFA db 0 (dfa, false) with

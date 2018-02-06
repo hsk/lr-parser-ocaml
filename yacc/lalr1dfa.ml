@@ -8,8 +8,7 @@ let merge_item db ci1 ci2 =
   if not (isSameLR0 ci1 ci2) then failwith "null" else (* LR0部分が違う *)
   if isSameLR1 ci1 ci2 then ci1 else (* 完全一致 *)
   genClosureItem db ci1.rule_id ci1.dot_index ( (* ソートはgenClosureItem 内部で行われる *)
-    S.union (S.of_list (Array.to_list ci1.lookaheads)) (S.of_list (Array.to_list ci2.lookaheads))
-    |> S.elements |> Array.of_list
+    S.union (S.of_list ci1.lookaheads) (S.of_list ci2.lookaheads) |> S.elements
   )
 
 (* LR(0)部分が同じ2つのClosureSetについて、先読み部分を統合した新しいClosureSetを生成 *)
