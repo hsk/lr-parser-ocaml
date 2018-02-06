@@ -44,7 +44,7 @@ let test () =
   "ClosureSet test" >::: [
     "Closure{S' -> . S [$]}" >::: [
       "ClosureSet size" >:: begin fun () ->
-        assert(Closureset.size(cs) = 9)
+        assert(Array.length cs.items = 9)
       end;
       "ClosureSet array" >:: begin fun () ->
         assert(cs.items = expanded)
@@ -96,7 +96,7 @@ let test2 () =
   "ClosureSet test2" >::: [
     "empty grammar" >::: [
       "ClosureSet size" >:: begin fun () ->
-        assert(Closureset.size(cs) = 2)
+        assert(Array.length cs.items = 2)
       end;
       "ClosureSet array" >:: begin fun () ->
         assert(cs.items = expanded)

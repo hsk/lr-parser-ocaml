@@ -6,7 +6,7 @@ all:
 		-I parser parser/language.ml parser/parser.ml \
 		-I yacc yacc/utils.ml yacc/symboldiscriminator.ml yacc/nullableset.ml yacc/firstset.ml \
 		   yacc/grammardb.ml yacc/closureitem.ml yacc/closureset.ml \
-		   yacc/dfagenerator.ml yacc/parsergenerator.ml \
+		   yacc/dfagenerator.ml yacc/lalr1dfa.ml yacc/parsergenerator.ml \
 		-I precompiler precompiler/rule_parser.ml  precompiler/precompiler.ml \
 		-I test -I test/data  -I test/parser -I test/precompiler -I test/yacc \
 		test/data/calc_language.ml \

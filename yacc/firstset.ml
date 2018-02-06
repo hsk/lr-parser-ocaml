@@ -53,13 +53,13 @@ let generateFirst grammar (symbols: symbolDiscriminator):firstSet =
   {first_map = loop first_map; nulls}
 
 
-(* 記号または記号列を与えて、その記号から最初に導かれうる非終端記号の集合を返す *)
+(* 記号から非終端記号の集合を取得 *)
 let get (set:firstSet) token: S.t =
   try M.find token set.first_map with _ -> failwith("invalid token found: " ^ token)
 
+(* 記号列から最初に導かれる非終端記号の集合を取得 *)
 let getFromList (set:firstSet) tokens: S.t =
-  (* 記号列の場合 *)
-  let (_,result) = List.fold_left (fun (stop,result) token ->
+  let (_,result) = tokens |> ((false, S.empty)|>List.fold_left (fun (stop,result) token ->
     (* 不正な記号を発見 *)
     if not (M.mem token set.first_map) then failwith("invalid token found: " ^ token);
     if stop then (stop, result) else
@@ -67,5 +67,5 @@ let getFromList (set:firstSet) tokens: S.t =
     let result = S.union result (M.find token set.first_map) in (* 追加 *)
     let stop = not (isNullable set.nulls token) in (* 現在のトークン ∉ Nulls ならばここでストップ *)
     (stop, result)
-  ) (false, S.empty) tokens in
+  )) in
   result

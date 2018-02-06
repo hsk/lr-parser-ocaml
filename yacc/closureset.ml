@@ -24,67 +24,56 @@ let sort cis =
   Array.sort (fun i1 i2 -> String.compare i1.Closureitem.lr1_hash i2.Closureitem.lr1_hash) cis;
   cis
 
-(* クロージャー展開を行う *)
-let expandClosure db cis =
-  (* ClosureItemをlookaheadsごとに分解する *)
-  let cis = cis|>Array.map(separateByLookAheads db)|>Array.to_list|>Array.concat|>sort in
-  (* 展開処理中はClosureItemのlookaheadsの要素数を常に1 *)
-  (* アイテム追加しながら変更がなくなるまで繰り返す *)
-  let cis = cis|>(0|>
-    let rec expandLoop i cis =
-      if i >= Array.length cis then cis else expandLoop (i+1) (
-        let ci = cis.(i) in
-        let ts = getRuleById db ci.rule_id |> (fun (_,ts,_) -> Array.of_list ts) in
-        if ci.dot_index >= Array.length ts then cis else (* .が末尾にある *)
-        let follow = ts.(ci.dot_index) in
-        if isNonterminalSymbol db.symbols follow then (* .の次の記号が非終端記号 *)
-          expand db cis ci ts follow (* クロージャー展開を行う *)
-        else cis
-      )
-    (* 先読み記号を導出 *)
-    and expand db cis ci ts follow =
-      (* ci.lookaheadsは要素数1 *)
-      let ts = Array.add (Array.slice ts (ci.dot_index + 1) (Array.length ts)) ci.lookaheads.(0) in
-      let ts = List.sort (fun t1 t2 ->
-        getTokenId db t1 - getTokenId db t2
-      ) (S.elements (getFromList db.first (Array.to_list ts))) in
-      (* follow を左辺にもつ全ての規則を、先読み記号を付与して追加 *)
-      findRules db follow |> Array.fold_left (fun cis (id,_) ->
-        List.fold_left (fun cis t ->
-          let new_ci = genClosureItem db id 0 [| t |] in
-          if Array.exists(fun ci -> Closureitem.isSameLR1 new_ci ci) cis then cis
-          (* 重複がなければ新しいアイテムを追加する *)
-          else Array.add cis new_ci
-        ) cis ts
-      ) cis
-    in expandLoop)
+let flat_items db cis =
+  let separete ci = (* ClosureItemのlookaheadsを1つに分解 *)
+    ci.lookaheads |> Array.map (fun t -> genClosureItem db ci.rule_id ci.dot_index [| t |])
   in
-  let cis = cis |> sort in
-  (* ClosureItemの先読み部分をマージする *)
+  cis|>Array.map separete|>Array.to_list|>Array.concat
+
+(* クロージャー展開 *)
+let expand_closure db cis ci symbols follow_dot_symbol =
+  let symbols = Array.add (Array.slice symbols (ci.dot_index + 1) (Array.length symbols)) ci.lookaheads.(0) in
+  let symbols = symbols |> Array.to_list |> Firstset.getFromList db.first |> S.elements in
+  let symbols = symbols |> List.sort (fun t1 t2 -> getTokenId db t1 - getTokenId db t2) in
+  (* follow_dot_symbol を左辺にもつ全ての規則を、先読み記号を付与して追加 *)
+  findRules db follow_dot_symbol |>(cis|>Array.fold_left (fun cis (id,_) ->
+    symbols|>(cis|>List.fold_left (fun cis symbol ->
+      let new_ci = genClosureItem db id 0 [| symbol |] in
+      if Array.exists(fun ci -> Closureitem.isSameLR1 new_ci ci) cis then cis
+      (* 重複がなければ新しいアイテムを追加する *)
+      else Array.add cis new_ci
+    ))
+  ))
+
+(* クロージャー展開ループ *)
+let rec expand_closure_loop db i cis =
+  (* 配列を拡張しながら配列がなくなるまでループ *)
+  if i >= Array.length cis then cis else expand_closure_loop db (i+1) (
+    let ci = cis.(i) in
+    let symbols = getRuleById db ci.rule_id |> (fun (_,symbols,_) -> Array.of_list symbols) in
+    if ci.dot_index >= Array.length symbols then cis else (* .が末尾にある *)
+    let follow_dot_symbol = symbols.(ci.dot_index) in
+    if isNonterminalSymbol db.symbols follow_dot_symbol then
+      expand_closure db cis ci symbols follow_dot_symbol (* .の次の記号が非終端記号ならばクロージャー展開を行う *)
+    else cis
+  )
+
+(* ClosureItemの先読み部分をマージする *)
+let merge db cis =
   let (_,cis,_) = cis |> Array.fold_left (fun (i,results,lookaheads) ci ->
     let lookaheads = Array.add lookaheads ci.lookaheads.(0) in
     if i < Array.length cis - 1 && Closureitem.isSameLR0 ci cis.(i + 1) (* 次が同じか？ *)
-    then (i+1, results, lookaheads) (* 続け、違う時は追加する *)
+    then (i+1, results, lookaheads)
     else (i+1, Array.add results (genClosureItem db ci.rule_id ci.dot_index lookaheads), [||])
-    ) (0, [||], [||]) in
-  sort(cis)
+  ) (0, [||], [||]) in
+  cis
 
 let genClosureSet db cis: closureSet =
-  let cis = expandClosure db cis in
-  let (lr0_hash,lr1_hash) = genHash cis in
+  let cis = flat_items db cis |> sort in (* アイテム配列全体を分割してフラットにする *)
+  let cis = expand_closure_loop db 0 cis |> sort in (* クロージャ展開をアイテム配列を拡張しながら行う *)
+  let cis = merge db cis |> sort in (* マージする *)
+  let (lr0_hash,lr1_hash) = genHash cis in (* ハッシュを生成する *)
   {items=cis; lr0_hash; lr1_hash}
 
-(* 保持しているLRアイテムの数 *)
-let size cs = Array.length cs.items
-
 (* LRアイテムが集合に含まれているかどうかを調べる *)
-
 let includes(cs, ci) = Array.exists(fun i -> Closureitem.isSameLR1 i ci) cs.items
-
-(* LR(0)部分が同じ2つのClosureSetについて、先読み部分を統合した新しいClosureSetを生成 *)
-let mergeLA(db, cs1, cs2): closureSet =
-  if not (isSameLR0 cs1 cs2) then failwith "null" else (* LR0部分が違う *)
-  if isSameLR1 cs1 cs2 then cs1 else (* LR1部分まで同じ *)
-  let a1, a2 = cs1.items, cs2.items in
-  let new_set = Array.mapi (fun i a1 -> merge db a1 a2.(i)) a1 in
-  genClosureSet db new_set

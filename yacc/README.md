@@ -16,6 +16,7 @@
     - dfagenerator.ml DFAジェネレータ
         - closureitem.ml LRアイテム
         - closureset.ml LRアイテムの集合
+    - lalr1dfa.ml LALR1DFAジェネレータ
 - README.md このファイル
 
 ## 大まかな処理の流れ
@@ -39,6 +40,7 @@ LR1のDFAが出来たら、LR1のDFAを圧縮してLALR1のDFAを作ります。
 - closureitem.ml LRアイテム
 - closureset.ml LRアイテムの集合
 - dfagenerator.ml DFAジェネレータ
+- lalr1dfa.ml LALR1DFAジェネレータ
 - parsergenerator.ml パーサジェネレータメイン
 
 要するにMakefileのコンパイル順に作ることになるので細かく見るなら作る順番でみるとボトムアップに見ることになるわけです。
@@ -137,19 +139,18 @@ DFAの要素のLRアイテムを集めたものがLRアイテム集合closureset
 というと、開始記号アイテムのみの集合を種にします。
 
 ```
-  let ci = genClosureItem db (-1) 0 [|"EOF"|] in
-  let cs = genClosureSet db [|ci|] in
+  genClosureSet db [|genClosureItem db (-1) 0 [|"EOF"|]|]
 ```
 
 展開処理は、以下の③つの処理を行います：
 
-- ①最初にClosureItemをlookaheadsごとに分解する。
-- ②各要素を更に展開しアイテム追加しながら変更がなくなるまで繰り返す
+- ①アイテム集合内のアイテムをlookaheadsごとに分解してフラットにする
+- ②クロージャ展開を配列にアイテムを追加しながら追加がなくなるまで繰り返す
 - ③マージする
 
-おそらくこのあたりが一番複雑です。詳細はソースを見てください。
+詳細はソースを見てください。
 
-とりあえず、http://tatamo.81.la/blog/2017/03/22/lr-parser-generator-implementation-04/ から引用しておきます。
+http://tatamo.81.la/blog/2017/03/22/lr-parser-generator-implementation-04/ から引用しておきます。
 
 > #### クロージャー展開
 > 
@@ -243,14 +244,21 @@ DFAの要素のLRアイテムを集めたものがLRアイテム集合closureset
 
 ### dfagenerator.ml DFAジェネレータ
 
-DFAの生成もclosuresetのような感じで生成できます。
-これもまた複雑です。詳細はソースを見てください。
-
-generateLR1DFA でLR1のDFAを生成し、generateLALR1DFAでLR1のDFAを圧縮したLALR1のDFAを生成します。
-
 DFA は、node の配列として表現します。
 node は、一つの closureSet と edge を持ちます。
 edge はトークンをキーとして node のインデックスを持つ Map であり、これはトークンをラベルとして他の node に向けて張られた辺の情報を意味します。
+
+DFAの生成はgenerateLR1DFAで行い
+
+- ① EOFから生成したアイテム集合を元にDFAを生成する
+- ② DFA更新処理が更新がなくなるまで続けます。
+
+
+DFA更新処理はupdateDFAで行い
+
+- ① .を進めたfollow_labelからアイテム集合へのマップを生成し
+- ② 既存のNodeのなかに同一のアイテム集合を持つindexを検索してなければDFAを拡張
+- ③ 検索したindexに辺が含まれていなければfollow_labelからindexから追加します
 
 よく分かってないので、http://tatamo.81.la/blog/2017/03/22/lr-parser-generator-implementation-04/ から引用しておきます。
 
@@ -319,7 +327,17 @@ edge はトークンをキーとして node のインデックスを持つ Map �
 > 
 > このようにして新しく3つのDFAノードを生成し、もとのノードからそれぞれの記号をラベルとした辺を張ります。
 
-ということを理解すればいいようですよ。みなさん。
+ということを理解すればいいようです。
+
+### lalr1dfa.ml LALR1DFAジェネレータ
+
+generateLALR1DFAでLR1のDFAを圧縮したLALR1のDFAを生成します。
+
+生成処理は以下の3つのパートが有ります:
+
+- ① 配列を2重ループでマージしながら削除履歴を残します。
+- ② 削除履歴から削除部分のないDFAを作成しつつ古いindexから新しいindexへの写像を作ります。
+- ③ エッジ内のインデックスを古いindexから新しいindexへ書き換えます。
 
 ### parsergenerator.ml パーサジェネレータメイン
 

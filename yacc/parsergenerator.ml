@@ -3,6 +3,7 @@ open Token
 open Utils
 open Parser
 open Dfagenerator
+open Lalr1dfa
 open Grammardb
 open Closureset
 open Closureitem
