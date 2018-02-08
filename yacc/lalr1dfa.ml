@@ -14,9 +14,11 @@ let merge_item db ci1 ci2 =
 (* LR(0)部分が同じ2つのClosureSetについて、先読み部分を統合した新しいClosureSetを生成 *)
 let merge_set db cs1 cs2: Closureset.closureSet =
   if not (Closureset.isSameLR0 cs1 cs2) then failwith "null" else (* LR0部分が違う *)
-  if Closureset.isSameLR1 cs1 cs2 then cs1 else (* LR1部分まで同じ *)
+  (if Closureset.isSameLR1 cs1 cs2 then cs1 else (* LR1部分まで同じ *)
   Closureset.genClosureSet db (List.map2 (fun ci1 ci2 ->
-    merge_item db ci1 ci2) cs1.Closureset.items cs2.Closureset.items)
+    merge_item db ci1 ci2) cs1.Closureset.items cs2.Closureset.items))
+  |> (fun p -> Printf.printf "merge\n[\n%s][\n%s]->[\n%s]\n"
+                (Closureset.show db cs1) (Closureset.show db cs2) (Closureset.show db p); p)
 
 (* LR(1)オートマトンの先読み部分をマージして、LALR(1)オートマトンを作る *)
 let generateLALR1DFA db lr_dfa : dfa =

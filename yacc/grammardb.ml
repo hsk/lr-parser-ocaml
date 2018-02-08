@@ -69,15 +69,14 @@ let hasRuleId db id : bool = id >= -1 && id < rule_size(db)
 let findRules db x : (int * grammarRule) array =
   try M.find x db.rulemap with _ -> [||]
 
-(* 規則idに対応した規則を返す *)
-(* -1が与えられた時は S' -> S $の規則を返す *)
+(* idから規則取得 *)
 let getRuleById db id : grammarRule =
-  if (id = -1) then ("S'", [db.start_symbol], None)
-  (* GrammarRule("S'", Array(this.start_symbol, "EOF")) *)
+  (* -1が与えられた時は S' -> S $の規則を返す *)
+  if id = -1 then ("S'", [db.start_symbol], None)
   else if id >= 0 && id < List.length db.grammar then List.nth db.grammar id
   else failwith("grammar id out of range")
 
-(* [[Token]]を与えると一意なidを返す *)
+(* tokenからid取得 *)
 let getTokenId db token =
   if not (M.mem token db.tokenmap) then failwith("invalid token " ^ token) else
   M.find token db.tokenmap

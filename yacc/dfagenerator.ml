@@ -4,9 +4,24 @@ open Closureitem
 open Closureset
 open Grammardb
 
-type edge = int M.t
-type node = {closure: closureSet; edge: edge}
+type edge = int M.t 
+type node = {closure: closureSet; edge: edge (* トークンからDFAのインデックスを示す *) }
 type dfa = node list
+
+let show_edge (edge:edge) =
+  let s = edge |> M.bindings |> List.map(fun (t,i)-> Printf.sprintf "%s -> %d;" t i) |> String.concat "" in
+  "[" ^ s ^ "]"
+
+let show db dfa =
+  dfa |> List.map(fun{closure;edge}->
+    Printf.sprintf "{closure=\n%sedge=%s\n}\n"
+      (Closureset.showi db closure) (show_edge edge)
+  ) |> String.concat ""
+let showi db dfa =
+  dfa |> List.mapi(fun i {closure;edge}->
+    Printf.sprintf "%d {closure=\n%sedge=%s\n}\n" i
+      (Closureset.showi db closure) (show_edge edge)
+  ) |> String.concat ""
 
 (* .を進めた記号からアイテム集合へのマップを生成 *)
 let generate_follow_dot_csmap db cs: closureSet M.t =
@@ -40,6 +55,7 @@ let generateLR1DFA db : dfa =
   [| { closure = genClosureSet db [genClosureItem db (-1) 0 ["EOF"]]; edge = M.empty} |] |>
   (* 変更がなくなるまでループ *)
   let rec loop dfa =
+    (* Printf.printf "DFA\n%s" (showi db (Array.to_list dfa)); *)
     match updateDFA db 0 (dfa, false) with
     | dfa,true -> loop dfa
     | dfa,_ -> Array.to_list dfa

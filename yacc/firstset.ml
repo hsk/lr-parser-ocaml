@@ -10,7 +10,6 @@ type firstSet = {first_map: S.t M.t; nulls: nullableSet}
 type cons = token * token
 
 (* First集合を生成する *)
-(* symbols 終端/非終端記号の判別に用いる分類器 *)
 let generateFirst grammar (symbols: symbolDiscriminator):firstSet =
   let nulls = generateNulls grammar in (* null集合を生成 *)
   (* 初期化 *)

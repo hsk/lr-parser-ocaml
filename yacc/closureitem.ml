@@ -6,6 +6,11 @@ type closureItem = {
   rule_id: int; dot_index: int; lookaheads: token list; (* 規則id・ドット位置・先読記号集合 *)
   lr0_hash: string; lr1_hash: string                     (* LR(0)、LR(1)アイテムのハッシュ値 *)
 }
+let show db {rule_id;dot_index;lookaheads} =
+  let (label,param,_) = getRuleById db rule_id in
+  let param = param |> List.mapi(fun i t -> if dot_index=i then ". "^t else t) in
+  let param = if dot_index = List.length param then param @["."] else param in
+  Printf.sprintf "%2d %s -> %s [%s]" rule_id label (String.concat " " param) (String.concat "," lookaheads)
 
 (* ハッシュ文字列を生成する *)
 let genHash db rule_id dot_index lookaheads =

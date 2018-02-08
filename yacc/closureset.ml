@@ -8,6 +8,16 @@ open Symboldiscriminator
 (* 複数のLRアイテムを保持するアイテム集合 *)
 type closureSet = {items: closureItem list; lr0_hash: string; lr1_hash: string}
 
+let shows db items =
+  items |> List.map (fun ci -> (Closureitem.show db ci) ^ "\n") |> String.concat ""
+
+let showis db items =
+  items |> List.mapi (fun i ci -> Printf.sprintf "%d %s\n" i (Closureitem.show db ci)) |> String.concat ""
+
+let show db {items} = shows db items
+
+let showi db {items} = showis db items
+
 (* ハッシュ文字列を生成 *)
 let genHash cis =
   let lr0_hash = cis |> List.map (fun i->i.Closureitem.lr0_hash) in
@@ -44,6 +54,7 @@ let expand_closure db cis ci symbols follow_dot_symbol =
 
 (* クロージャー展開ループ *)
 let rec expand_closure_loop db i cis =
+  (* Printf.printf "expand %d\n%s" i (showis db cis); *)
   (* 配列を拡張しながら配列がなくなるまでループ *)
   if i >= List.length cis then cis else expand_closure_loop db (i+1) (
     let ci = List.nth cis i in
