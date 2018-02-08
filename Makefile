@@ -23,6 +23,7 @@ all:
 		test/language_parsing_test.ml \
 		test/rule_parsing_test.ml \
 		test/broken_language_test.ml \
+		-I examples/ast_parser examples/ast_parser/ast.ml examples/ast_parser/ast_parser_test.ml \
 		test/all_test.ml \
 
 	make clean
@@ -33,7 +34,8 @@ clean:
 	rm -rf *.cm* lexer/*.cm* lexer/data/*.cm* lexer/test/*.cm* \
 	parser/*.cm* parser/data/*.cm* parser/test/*.cm* \
 	precompiler/*.cm* yacc/*.cm* \
-	test/*.cm* test/data/*.cm* test/parser/*.cm* test/precompiler/*.cm* test/yacc/*.cm*
+	test/*.cm* test/data/*.cm* test/parser/*.cm* test/precompiler/*.cm* test/yacc/*.cm* \
+	examples/ast_parser/*.cm*
 clean2:
 	rm -rf test1 a.out *.cache
 cleanall:

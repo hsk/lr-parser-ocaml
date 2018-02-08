@@ -5,13 +5,11 @@ open Ast
 open Parser
 
 let test () =
-  let parsingtable = Parsergenerator.generate test_calc_language in
-  let parser = Ast.createParser test_calc_language.grammar parsingtable in
-  "parser test" >::: [
+  let parsingtable = Parsergenerator.generate Calc_language.language in
+  let parser = Ast.createParser Calc_language.grammar parsingtable in
+  "ast parser test" >::: [
     "getting calc language ast" >:: begin fun () ->
-      (*let (ast : ast) = Obj.magic(parser (test_calc_language.lex) "1") in
-      Printf.printf "ast=%s\n%!" (Callback.show ast);*)
-      assert(Obj.magic(parser (Ast.createLex test_calc_language.lex) "1+1") =
+      assert(Obj.magic(parser (Ast.createLex Calc_language.lex) "1+1") =
         ASTNode("EXP", "",
           [ ASTNode("EXP", "", [
               ASTNode("TERM", "", [
@@ -25,6 +23,6 @@ let test () =
       )
     end;
     "invalid input" >:: begin fun () ->
-      assert(Obj.magic(parser (Ast.createLex test_calc_language.lex) "1zzz") = ASTNode("DIGITS", "1", []))
+      assert(Obj.magic(parser (Ast.createLex Calc_language.lex) "1zzz") = ASTNode("DIGITS", "1", []))
     end;
   ]

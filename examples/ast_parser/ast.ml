@@ -8,7 +8,7 @@ let rec show = function
 and show_ls ls = String.concat ";" (List.map show ls)
 
 let createLex lex = Lexer.exec lex (fun (id, value) ->
-  let (token,_,_,_) = List.nth lex id in
+  let (token,_,_) = List.nth lex id in
   Obj.magic(ASTNode(token, value, []))
 )
 

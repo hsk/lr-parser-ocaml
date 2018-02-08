@@ -15,4 +15,5 @@ let _ =
     Parser_test.test ();
     Broken_language_test.test ();
     Language_parsing_test.test ();
+    Ast_parser_test.test();
   ])
