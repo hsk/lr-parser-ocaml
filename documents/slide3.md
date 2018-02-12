@@ -3,7 +3,7 @@ customTheme : "my-theme"
 transition : none
 ---
 
-# 考古学的考察によるLR構文解析の説明
+# プログラムを見て理解するLR構文解析
 
 h_sakurai
 
@@ -13,9 +13,9 @@ h_sakurai
 
 - LR構文解析は理解するのが難しいアルゴリズムです。
 - しかしながら、動く短いソースがあれば理解の助けになるはずです。
-- そこで、我々は、よく分かっていない状態でLR構文解析のプログラムをお見せします。
-- その後、構文解析表から状態遷移図を自動で生成します。
-- さらに、ロギング機能を付けることでその動きを観察しLR構文解析のアルゴリズムについて説明を試みます。
+- そこで、とにかく小さなLR構文解析のプログラムを読みます。
+- その後、構文解析表から状態遷移図生成するプログラムを作ります。
+- さらに、パーサにログ機能を付けて動きを見ます。
 
 ---
 
@@ -319,6 +319,16 @@ LR構文解析の動きをログを元に見てみます。
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 1
+![fig](images/end.png)
+
+
+--
+
 # result 1 = 1
 
 ---
@@ -523,6 +533,16 @@ LR構文解析の動きをログを元に見てみます。
     status 1 0
     results 6
 ![fig](images/s1-36.png)
+
+
+--
+
+## Accept
+
+    inputs $
+    status 1 0
+    results 6
+![fig](images/end.png)
 
 
 --
@@ -815,6 +835,16 @@ LR構文解析の動きをログを元に見てみます。
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 24
+![fig](images/end.png)
+
+
+--
+
 # result 2\*3\*4 = 24
 
 ---
@@ -1059,6 +1089,16 @@ LR構文解析の動きをログを元に見てみます。
     status 1 0
     results 3
 ![fig](images/s1-36.png)
+
+
+--
+
+## Accept
+
+    inputs $
+    status 1 0
+    results 3
+![fig](images/end.png)
 
 
 --
@@ -1431,6 +1471,16 @@ LR構文解析の動きをログを元に見てみます。
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 6
+![fig](images/end.png)
+
+
+--
+
 # result 1\+2\+3 = 6
 
 ---
@@ -1759,6 +1809,16 @@ LR構文解析の動きをログを元に見てみます。
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 7
+![fig](images/end.png)
+
+
+--
+
 # result 1\+2\*3 = 7
 
 ---
@@ -2083,6 +2143,16 @@ LR構文解析の動きをログを元に見てみます。
     status 1 0
     results 10
 ![fig](images/s1-36.png)
+
+
+--
+
+## Accept
+
+    inputs $
+    status 1 0
+    results 10
+![fig](images/end.png)
 
 
 --

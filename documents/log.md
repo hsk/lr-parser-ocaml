@@ -126,6 +126,16 @@ transition: none
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 1
+![fig](images/end.png)
+
+
+--
+
 # result 1 = 1
 
 ---
@@ -330,6 +340,16 @@ transition: none
     status 1 0
     results 6
 ![fig](images/s1-36.png)
+
+
+--
+
+## Accept
+
+    inputs $
+    status 1 0
+    results 6
+![fig](images/end.png)
 
 
 --
@@ -622,6 +642,16 @@ transition: none
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 24
+![fig](images/end.png)
+
+
+--
+
 # result 2\*3\*4 = 24
 
 ---
@@ -866,6 +896,16 @@ transition: none
     status 1 0
     results 3
 ![fig](images/s1-36.png)
+
+
+--
+
+## Accept
+
+    inputs $
+    status 1 0
+    results 3
+![fig](images/end.png)
 
 
 --
@@ -1238,6 +1278,16 @@ transition: none
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 6
+![fig](images/end.png)
+
+
+--
+
 # result 1\+2\+3 = 6
 
 ---
@@ -1566,6 +1616,16 @@ transition: none
 
 --
 
+## Accept
+
+    inputs $
+    status 1 0
+    results 7
+![fig](images/end.png)
+
+
+--
+
 # result 1\+2\*3 = 7
 
 ---
@@ -1890,6 +1950,16 @@ transition: none
     status 1 0
     results 10
 ![fig](images/s1-36.png)
+
+
+--
+
+## Accept
+
+    inputs $
+    status 1 0
+    results 10
+![fig](images/end.png)
 
 
 --

@@ -67,7 +67,7 @@ let logimg name name2 prm1 fp =
                 "T",["T";"*";"N"],"$1*$2";(*s2*)
                 "T",["N"],        "$1";   (*s3*)|] in
   let color i name =
-    if i=name then ",fillcolor=\"#88ffff\", style=filled" else ""
+    if i=name then ",fontcolor=blue,color=blue,fillcolor=\"#88ffff\", style=filled" else ""
   in
   Printf.fprintf fp "digraph G{graph [rankdir=LR];\n";
   Array.iteri(fun i (n,p,f) ->
@@ -86,14 +86,14 @@ let logimg name name2 prm1 fp =
     let i = Printf.sprintf "s%d" i in
     Printf.fprintf fp "%s[label=\"%s %s\"%s];\n" i i (List.assoc i gotos) (color i name)
   ) table;
-  Printf.fprintf fp "end[label=\"end $\"];\n";
+  Printf.fprintf fp "end[label=\"end $\"%s];\n" (color "end" name);
   let color prm = if Some prm=prm1 then ",color=blue,fontcolor=blue" else "" in
   Array.iteri(fun i m ->
     List.iter(function
     | (v,(Accept as op)) -> Printf.fprintf fp "s%d->end[label=\"%s\nAccept\"%s];\n" i v (color (v,op, i))
     | (v,(Goto j as op)) -> Printf.fprintf fp "s%d->s%d[label=\"%s\nGoto\"%s];\n" i j v (color (v,op, i))
     | (v,(Shift j as op)) -> Printf.fprintf fp "s%d->s%d[label=\"%s\nShift\"%s];\n" i j v (color (v,op, i))
-    | (v,(Reduce j as op)) -> Printf.fprintf fp "s%d->g%d[label=\"%s\nReduce\"%s];\n" i j v (color (v,op, i))
+    | (v,(Reduce j as op)) -> Printf.fprintf fp "s%d->g%d[label=\"%s\nReduce\"%s,dir=none];\n" i j v (color (v,op, i))
     ) m
   ) table;
   Printf.fprintf fp "}\n";
@@ -125,8 +125,8 @@ let log(op,((t,_)::_ as ts),s::ss,rs) =
   Printf.fprintf o "    results %s\n" (String.concat " " (List.map show rs));
   Printf.fprintf o "![fig](images/%s.png)\n\n%!" name;
   Printf.fprintf o "\n--\n\n%!";
-  (*let fp = open_out "a.dot" in logimg name "" None fp; close_out fp;
-  exec ("dot -Tpng a.dot -o images/"^name^".png") |> ignore;*)
+  let fp = open_out "a.dot" in logimg name "" None fp; close_out fp;
+  exec ("dot -Tpng a.dot -o images/"^name^".png") |> ignore;
   (match op with
   | Reduce g ->
     let name2 = Printf.sprintf "g%d" g in
@@ -137,10 +137,10 @@ let log(op,((t,_)::_ as ts),s::ss,rs) =
     Printf.fprintf o "    results %s\n" (String.concat " " (List.map show rs));
     Printf.fprintf o "![fig](images/%s.png)\n\n%!" fname;
     Printf.fprintf o "\n--\n\n%!";
-    (*let fp = open_out "a.dot" in
+    let fp = open_out "a.dot" in
     logimg name name2 (Some (t,op,s)) fp;
     close_out fp;
-    exec ("dot -Tpng a.dot -o images/"^fname^".png") |> ignore*)
+    exec ("dot -Tpng a.dot -o images/"^fname^".png") |> ignore
   | _ ->
     let fname = Printf.sprintf "s%d-%d" s (int_of_char t.[0]) in
     Printf.fprintf o "## %s\n\n%!" (show_op op);
@@ -149,17 +149,29 @@ let log(op,((t,_)::_ as ts),s::ss,rs) =
     Printf.fprintf o "    results %s\n" (String.concat " " (List.map show rs));
     Printf.fprintf o "![fig](images/%s.png)\n\n%!" fname;
     Printf.fprintf o "\n--\n\n%!";
-    (*let fp = open_out "a.dot" in
+    let fp = open_out "a.dot" in
     logimg name "" (Some (t,op,s)) fp;
     close_out fp;
-    exec ("dot -Tpng a.dot -o images/"^fname^".png") |> ignore*)
+    exec ("dot -Tpng a.dot -o images/"^fname^".png") |> ignore;
+    if op = Accept then (
+      let fname = Printf.sprintf "end" in
+      Printf.fprintf o "## %s\n\n%!" (show_op op);
+      Printf.fprintf o "    inputs %s\n" (String.concat " " (List.map(fun(a,b)->show b) ts));
+      Printf.fprintf o "    status %s\n" (String.concat " " (List.map string_of_int (s::ss)));
+      Printf.fprintf o "    results %s\n" (String.concat " " (List.map show rs));
+      Printf.fprintf o "![fig](images/%s.png)\n\n%!" fname;
+      Printf.fprintf o "\n--\n\n%!";
+      let fp = open_out "a.dot" in
+      logimg "end" "" None fp;
+      close_out fp;
+      exec ("dot -Tpng a.dot -o images/"^fname^".png") |> ignore
+    )   
   );
   ()
 let rec parser((t,v)::ts,s::ss,rs) =
   let op = List.assoc t table.(s) in
   log(op, (t,v)::ts,s::ss,rs);
-  exec(op,(t,v)::ts,s::ss,rs)
-and exec = function
+  match(op,(t,v)::ts,s::ss,rs) with
   | Accept  ,        _, ss,r::_ -> r
   | Shift  s,(_,v)::ts, ss,rs   -> parser(ts,s::ss,v::rs)
   | Goto   s,(_,_)::ts, ss,rs   -> parser(ts,s::ss,   rs)
