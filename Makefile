@@ -28,7 +28,7 @@ all:
 
 	make clean
 	./test1
-	make clean2
+#	make clean2
 
 clean:
 	rm -rf *.cm* lexer/*.cm* lexer/data/*.cm* lexer/test/*.cm* \

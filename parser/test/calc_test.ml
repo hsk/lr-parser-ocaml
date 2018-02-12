@@ -33,7 +33,7 @@ let parsing_table : parsingTable = [
 ]
 
 let test () =
-  (*Parser.debug_mode := true;*)
+  Parser.debug_mode := true;
   let parser = Parser.create grammar ("",parsing_table) (Lexer.create lex) in
   "calc test" >::: [
     "8"       >:: (fun _ -> assert(parser "8"       = "8"));

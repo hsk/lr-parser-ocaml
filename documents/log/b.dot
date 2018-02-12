@@ -1,0 +1,55 @@
+digraph G{graph [rankdir=LR];
+g0[label="g0 3 E->E+T{$1+$2}" shape=box];
+g1[label="g1 1 E->T{$1}" shape=box];
+g2[label="g2 3 T->T*N{$1*$2}" shape=box];
+g3[label="g3 1 T->N{$1}" shape=box];
+s0[label="s0 S'"];
+s1[label="s1 E"];
+s2[label="s2 N"];
+s3[label="s3 T"];
+s4[label="s4 +"];
+s5[label="s5 *"];
+s6[label="s6 T"];
+s7[label="s7 N"];
+end[label="end $"];
+s0->s2[label="N
+Shift"];
+s0->s1[label="E
+Goto",color=blue];
+s0->s3[label="T
+Goto",color=blue];
+s1->s4[label="+
+Shift"];
+s1->end[label="$
+Accept"];
+s2->g3[label="+
+Reduce"];
+s2->g3[label="*
+Reduce"];
+s2->g3[label="$
+Reduce"];
+s3->g1[label="+
+Reduce"];
+s3->s5[label="*
+Shift"];
+s3->g1[label="$
+Reduce"];
+s4->s2[label="N
+Shift"];
+s4->s6[label="T
+Goto",color=blue];
+s5->s7[label="N
+Shift"];
+s6->g0[label="+
+Reduce"];
+s6->s5[label="*
+Shift"];
+s6->g0[label="$
+Reduce"];
+s7->g2[label="+
+Reduce"];
+s7->g2[label="*
+Reduce"];
+s7->g2[label="$
+Reduce"];
+}

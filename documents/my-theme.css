@@ -1,0 +1,19 @@
+
+.reveal ul li {
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-size: 30px;
+  box-shadow: #ffffff 50px;
+}
+.reveal pre {
+  width: 95%;
+}
+.reveal pre code {
+  font-size: 19px;
+  background: #042105;
+}
+
+.reveal h1,.reveal h2,.reveal h3,.reveal h4,.reveal h5 {
+  background: #3a2d11;
+  border-bottom: 4px solid #bf6927;
+  box-shadow: #ffffff 50px;
+}
