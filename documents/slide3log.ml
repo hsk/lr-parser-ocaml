@@ -4,10 +4,10 @@ let lex =   [ "ws", "[ \\r\\n\\t]+", (fun i->E "");
               "N",  "[1-9][0-9]*",   (fun i-> I(int_of_string i));
               "+",  "+",             (fun i->E "+");
               "*",  "*",             (fun i->E "*");              ]
-let grammar=[|"E",["E";"+";"T"],(fun[I a;_;I b]->I(a+b));(*s0*)
-              "E",["T"],        (fun[a]    ->a);         (*s1*)
-              "T",["T";"*";"N"],(fun[I a;_;I b]->I(a*b));(*s2*)
-              "T",["N"],        (fun[a]    ->a);         (*s3*)|]
+let grammar=[|"E",["E";"+";"T"],(fun[I a;_;I b]->I(a+b)),"$1+$2";(*s0*)
+              "E",["T"],        (fun[a]    ->a)         ,"$1"   ;(*s1*)
+              "T",["T";"*";"N"],(fun[I a;_;I b]->I(a*b)),"$1*$2";(*s2*)
+              "T",["N"],        (fun[a]    ->a)         ,"$1"   ;(*s3*)|]
 type op = Accept | Shift of int | Reduce of int | Goto of int
 let table = [|
 (*0*)["N",Shift 2;                                     "E",Goto 1;"T",Goto 3];
@@ -50,15 +50,11 @@ module Log = struct
     (!outs,!errs,string_of_int code)
 
   let logimg name name2 prm1 fp =
-    let grammar=[|"E",["E";"+";"T"],"$1+$2";(*s0*)
-                  "E",["T"],        "$1";   (*s1*)
-                  "T",["T";"*";"N"],"$1*$2";(*s2*)
-                  "T",["N"],        "$1";   (*s3*)|] in
     let color i name =
       if i=name then ",fontcolor=blue,color=blue,fillcolor=\"#88ffff\", style=filled" else ""
     in
     Printf.fprintf fp "digraph G{graph [rankdir=LR];\n";
-    Array.iteri(fun i (n,p,f) ->
+    Array.iteri(fun i (n,p,_,f) ->
       let i = Printf.sprintf "g%d" i in
       Printf.fprintf fp "%s[label=\"%s %d %s->%s{%s}\" shape=box%s];\n" i i (List.length p) n (String.concat "" p) f (color i name2)
     ) grammar;
@@ -104,9 +100,9 @@ module Log = struct
     Printf.fprintf o "# %s\n\n--\n\n" (escape input)
   let logParseResult input r =
     Printf.fprintf o "# result %s = %s\n\n---\n\n" (escape input) (show r)
-  let log1 name name2 option op ts ss rs fname =
+  let log1 comment name name2 option op ts ss rs fname =
     Printf.fprintf o "## %s\n\n%!" (show_op op);
-    Printf.fprintf o "    inputs %s\n" (String.concat " " (List.map(fun(a,b)->show b) ts));
+    Printf.fprintf o "    inputs %s %s\n" (String.concat " " (List.map(fun(a,b)->show b) ts)) comment;
     Printf.fprintf o "    status %s\n" (String.concat " " (List.map string_of_int ss));
     Printf.fprintf o "    results %s\n" (String.concat " " (List.map show rs));
     Printf.fprintf o "![fig](images/%s.png)\n\n%!" fname;
@@ -114,18 +110,26 @@ module Log = struct
     let fp = open_out "a.dot" in logimg name name2 option fp; close_out fp;
     exec ("dot -Tpng a.dot -o images/"^fname^".png") |> ignore;
     ()
-  let log(op,((t,_)::_ as ts),s::ss,rs) =
+  let log(op,((t,v)::_ as ts),s::ss,rs) =
     let name = Printf.sprintf "s%d" s in
-    log1 name "" None op  ts (s::ss) rs name;
+    log1 "" name "" None op  ts (s::ss) rs name;
     (match op with
     | Reduce g ->
       let name2 = Printf.sprintf "g%d" g in
       let fname = Printf.sprintf "g%d-%d" g (int_of_char t.[0]) in
-      log1 name name2 (Some (t,op,s)) op ts (s::ss) rs fname;
-    | _ ->
+      let (a,b,_,c)=grammar.(g) in
+      log1 (Printf.sprintf "文法g%dを見て、%d個Pop、{%s}を結果にpush、文法名%sを入力にpush" g (List.length b) c a)
+        name name2 (Some (t,op,s)) op ts (s::ss) rs fname;
+    | Accept ->
       let fname = Printf.sprintf "s%d-%d" s (int_of_char t.[0]) in
-      log1 name "" (Some (t,op,s)) op ts (s::ss) rs fname;
-      if op = Accept then log1 "end" "" None op  ts (s::ss) rs "end";
+      log1 "アクセプト" name "" (Some (t,op,s)) op ts (s::ss) rs fname;
+      log1 (Printf.sprintf "結果 %s です" (show (List.nth rs 0))) "end" "" None op  ts (s::ss) rs "end";
+    | Goto p ->
+      let fname = Printf.sprintf "s%d-%d" s (int_of_char t.[0]) in
+      log1 (Printf.sprintf "ステータスに%dをpush,入力%sを捨てる" p (show v)) name "" (Some (t,op,s)) op ts (s::ss) rs fname;
+    | Shift p ->
+      let fname = Printf.sprintf "s%d-%d" s (int_of_char t.[0]) in
+      log1 (Printf.sprintf "ステータスに%dをpush 入力%sを結果に移動" p (show v)) name "" (Some (t,op,s)) op ts (s::ss) rs fname;
     );
     ()
 end
@@ -148,7 +152,7 @@ let rec parser((t,v)::ts,s::ss,rs) =
   | Shift  s,(_,v)::ts, ss,rs   -> parser(ts,s::ss,v::rs)
   | Goto   s,(_,_)::ts, ss,rs   -> parser(ts,s::ss,   rs)
   | Reduce g,       ts, ss,rs   ->
-    let t,ptn,f = grammar.(g) in let len = List.length ptn in
+    let t,ptn,f,_ = grammar.(g) in let len = List.length ptn in
     let _,ss = pop(len,[],ss) in let rs1,rs=pop(len,[],rs) in
     parser((t,E t)::ts,ss,f rs1::rs)
 let parse input =
