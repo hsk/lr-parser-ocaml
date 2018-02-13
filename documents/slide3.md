@@ -3,7 +3,7 @@ customTheme : "my-theme"
 transition : none
 ---
 
-# プログラムを見て理解するLR構文解析
+## 50行のコードと遷移図付きログで<br>分かるLR1構文解析
 
 h_sakurai
 
@@ -155,20 +155,22 @@ let _ = assert(parse"1+2"=I 3); assert(parse"1+2*3"=I 7);
 
 ---
 
-### 2. 考察
+### 2. 遷移図付きログ
+
+- 1章ではプログラムをみましたが、LR構文解析の説明は足りていないと思います。
+- 2章ではLR構文解析の動きを状態遷移図付きのログを見ます。
 
 ---
-
 
 ### 2.1. 状態遷移図
 
 ![遷移図](images/a.png)
 
-- granphvizで 図を書きました。
+- 遷移図は granphviz という `dot` コマンドにテキストファイルを渡せば遷移図を描いてくれるツールを用いて描きました。
 - `1`,`1*2`,`1*2*3`,`1+1`,`1+1+1`,`1*2+1`,`1+2*3` の動きを考えてみるとよいはずです。
 - Shift は移動し、Reduce文法を見て戻り、Gotoは文法で移動します。
 - これを肴にすごろくゲームなどをしながらお酒を一杯飲めそうです。
-- しかしながら、それでは説明になっていません。
+- しかしながら、これだけ見て理解することはちょっと難しいでしょう。
 
 ---
 
@@ -176,20 +178,21 @@ let _ = assert(parse"1+2"=I 3); assert(parse"1+2*3"=I 7);
 
 ![遷移図](images/b.png)
 
-- 先程の図は自分で手書きしたa.dotファイルをdotプログラムに渡して生成していました。
-- 理解を深めるために、自動的に生成するプログラムを作ってみました。
+- 次に、５０行程のプログラムを書いて自動生成してみました。
+- このプログラム制作は、構文解析表の理解を深めるために役立ちました。
 
 ---
 
 ### 2.3. ロギング機能
 
-- 遷移図はなかなか良いもののように思えたので、構文解析プログラムを改造しロギング機能を付けてプレゼン資料を作ってみました。
+- このプレゼン自体がMarkdownで書かれていますが、ログもmarkdownで作ればプログラムのログをプレゼンに使えます。
+- 遷移図はなかなか分かりやすいので、構文解析プログラムを改造しロギング機能を付けてプレゼン資料を作ってみました。
 
 ---
 
-### 3. ログからLR構文解析の動きの説明
+### 3. LR構文解析の動き
 
-LR構文解析の動きをログを元に見てみます。
+- それでは、ログを実際に見てみましょう。
 
 ---
 
@@ -199,7 +202,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 $
+    inputs 1 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -209,7 +212,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 $
+    inputs 1 $ ステータスに2をpush 入力1を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -219,7 +222,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 
     status 2 0
     results 1
 ![fig](images/s2.png)
@@ -229,7 +232,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 1
 ![fig](images/g3-36.png)
@@ -239,7 +242,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T $
+    inputs T $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -249,7 +252,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T $
+    inputs T $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 1
 ![fig](images/s0-84.png)
@@ -259,7 +262,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs $
+    inputs $ 
     status 3 0
     results 1
 ![fig](images/s3.png)
@@ -269,7 +272,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs $
+    inputs $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 1
 ![fig](images/g1-36.png)
@@ -279,7 +282,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -289,7 +292,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 1
 ![fig](images/s0-69.png)
@@ -299,7 +302,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 1
 ![fig](images/s1.png)
@@ -309,7 +312,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 1
 ![fig](images/s1-36.png)
@@ -319,7 +322,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 1 です
     status 1 0
     results 1
 ![fig](images/end.png)
@@ -337,7 +340,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 $
+    inputs 2 * 3 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -347,7 +350,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 $
+    inputs 2 * 3 $ ステータスに2をpush 入力2を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -357,7 +360,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 $
+    inputs * 3 $ 
     status 2 0
     results 2
 ![fig](images/s2.png)
@@ -367,7 +370,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 $
+    inputs * 3 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 2
 ![fig](images/g3-42.png)
@@ -377,7 +380,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 3 $
+    inputs T * 3 $ 
     status 0
     results 2
 ![fig](images/s0.png)
@@ -387,7 +390,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 3 $
+    inputs T * 3 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 2
 ![fig](images/s0-84.png)
@@ -397,7 +400,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 $
+    inputs * 3 $ 
     status 3 0
     results 2
 ![fig](images/s3.png)
@@ -407,7 +410,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 $
+    inputs * 3 $ ステータスに5をpush 入力*を結果に移動
     status 3 0
     results 2
 ![fig](images/s3-42.png)
@@ -417,7 +420,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 $
+    inputs 3 $ 
     status 5 3 0
     results * 2
 ![fig](images/s5.png)
@@ -427,7 +430,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 $
+    inputs 3 $ ステータスに7をpush 入力3を結果に移動
     status 5 3 0
     results * 2
 ![fig](images/s5-78.png)
@@ -437,7 +440,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs $
+    inputs $ 
     status 7 5 3 0
     results 3 * 2
 ![fig](images/s7.png)
@@ -447,7 +450,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs $
+    inputs $ 文法g2を見て、3個Pop、{$1*$2}を結果にpush、文法名Tを入力にpush
     status 7 5 3 0
     results 3 * 2
 ![fig](images/g2-36.png)
@@ -457,7 +460,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T $
+    inputs T $ 
     status 0
     results 6
 ![fig](images/s0.png)
@@ -467,7 +470,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T $
+    inputs T $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 6
 ![fig](images/s0-84.png)
@@ -477,7 +480,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs $
+    inputs $ 
     status 3 0
     results 6
 ![fig](images/s3.png)
@@ -487,7 +490,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs $
+    inputs $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 6
 ![fig](images/g1-36.png)
@@ -497,7 +500,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 6
 ![fig](images/s0.png)
@@ -507,7 +510,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 6
 ![fig](images/s0-69.png)
@@ -517,7 +520,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 6
 ![fig](images/s1.png)
@@ -527,7 +530,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 6
 ![fig](images/s1-36.png)
@@ -537,7 +540,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 6 です
     status 1 0
     results 6
 ![fig](images/end.png)
@@ -555,7 +558,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 * 4 $
+    inputs 2 * 3 * 4 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -565,7 +568,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 * 4 $
+    inputs 2 * 3 * 4 $ ステータスに2をpush 入力2を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -575,7 +578,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 * 4 $
+    inputs * 3 * 4 $ 
     status 2 0
     results 2
 ![fig](images/s2.png)
@@ -585,7 +588,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 * 4 $
+    inputs * 3 * 4 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 2
 ![fig](images/g3-42.png)
@@ -595,7 +598,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 3 * 4 $
+    inputs T * 3 * 4 $ 
     status 0
     results 2
 ![fig](images/s0.png)
@@ -605,7 +608,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 3 * 4 $
+    inputs T * 3 * 4 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 2
 ![fig](images/s0-84.png)
@@ -615,7 +618,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 * 4 $
+    inputs * 3 * 4 $ 
     status 3 0
     results 2
 ![fig](images/s3.png)
@@ -625,7 +628,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 * 4 $
+    inputs * 3 * 4 $ ステータスに5をpush 入力*を結果に移動
     status 3 0
     results 2
 ![fig](images/s3-42.png)
@@ -635,7 +638,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 * 4 $
+    inputs 3 * 4 $ 
     status 5 3 0
     results * 2
 ![fig](images/s5.png)
@@ -645,7 +648,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 * 4 $
+    inputs 3 * 4 $ ステータスに7をpush 入力3を結果に移動
     status 5 3 0
     results * 2
 ![fig](images/s5-78.png)
@@ -655,7 +658,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs * 4 $
+    inputs * 4 $ 
     status 7 5 3 0
     results 3 * 2
 ![fig](images/s7.png)
@@ -665,7 +668,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs * 4 $
+    inputs * 4 $ 文法g2を見て、3個Pop、{$1*$2}を結果にpush、文法名Tを入力にpush
     status 7 5 3 0
     results 3 * 2
 ![fig](images/g2-42.png)
@@ -675,7 +678,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 4 $
+    inputs T * 4 $ 
     status 0
     results 6
 ![fig](images/s0.png)
@@ -685,7 +688,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 4 $
+    inputs T * 4 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 6
 ![fig](images/s0-84.png)
@@ -695,7 +698,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 4 $
+    inputs * 4 $ 
     status 3 0
     results 6
 ![fig](images/s3.png)
@@ -705,7 +708,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 4 $
+    inputs * 4 $ ステータスに5をpush 入力*を結果に移動
     status 3 0
     results 6
 ![fig](images/s3-42.png)
@@ -715,7 +718,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 4 $
+    inputs 4 $ 
     status 5 3 0
     results * 6
 ![fig](images/s5.png)
@@ -725,7 +728,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 4 $
+    inputs 4 $ ステータスに7をpush 入力4を結果に移動
     status 5 3 0
     results * 6
 ![fig](images/s5-78.png)
@@ -735,7 +738,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs $
+    inputs $ 
     status 7 5 3 0
     results 4 * 6
 ![fig](images/s7.png)
@@ -745,7 +748,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs $
+    inputs $ 文法g2を見て、3個Pop、{$1*$2}を結果にpush、文法名Tを入力にpush
     status 7 5 3 0
     results 4 * 6
 ![fig](images/g2-36.png)
@@ -755,7 +758,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T $
+    inputs T $ 
     status 0
     results 24
 ![fig](images/s0.png)
@@ -765,7 +768,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T $
+    inputs T $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 24
 ![fig](images/s0-84.png)
@@ -775,7 +778,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs $
+    inputs $ 
     status 3 0
     results 24
 ![fig](images/s3.png)
@@ -785,7 +788,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs $
+    inputs $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 24
 ![fig](images/g1-36.png)
@@ -795,7 +798,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 24
 ![fig](images/s0.png)
@@ -805,7 +808,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 24
 ![fig](images/s0-69.png)
@@ -815,7 +818,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 24
 ![fig](images/s1.png)
@@ -825,7 +828,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 24
 ![fig](images/s1-36.png)
@@ -835,7 +838,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 24 です
     status 1 0
     results 24
 ![fig](images/end.png)
@@ -853,7 +856,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 + 2 $
+    inputs 1 + 2 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -863,7 +866,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 + 2 $
+    inputs 1 + 2 $ ステータスに2をpush 入力1を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -873,7 +876,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 2 $
+    inputs + 2 $ 
     status 2 0
     results 1
 ![fig](images/s2.png)
@@ -883,7 +886,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 2 $
+    inputs + 2 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 1
 ![fig](images/g3-43.png)
@@ -893,7 +896,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 2 $
+    inputs T + 2 $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -903,7 +906,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 2 $
+    inputs T + 2 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 1
 ![fig](images/s0-84.png)
@@ -913,7 +916,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 2 $
+    inputs + 2 $ 
     status 3 0
     results 1
 ![fig](images/s3.png)
@@ -923,7 +926,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 2 $
+    inputs + 2 $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 1
 ![fig](images/g1-43.png)
@@ -933,7 +936,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 2 $
+    inputs E + 2 $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -943,7 +946,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 2 $
+    inputs E + 2 $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 1
 ![fig](images/s0-69.png)
@@ -953,7 +956,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 2 $
+    inputs + 2 $ 
     status 1 0
     results 1
 ![fig](images/s1.png)
@@ -963,7 +966,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 2 $
+    inputs + 2 $ ステータスに4をpush 入力+を結果に移動
     status 1 0
     results 1
 ![fig](images/s1-43.png)
@@ -973,7 +976,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 $
+    inputs 2 $ 
     status 4 1 0
     results + 1
 ![fig](images/s4.png)
@@ -983,7 +986,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 $
+    inputs 2 $ ステータスに2をpush 入力2を結果に移動
     status 4 1 0
     results + 1
 ![fig](images/s4-78.png)
@@ -993,7 +996,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 
     status 2 4 1 0
     results 2 + 1
 ![fig](images/s2.png)
@@ -1003,7 +1006,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 4 1 0
     results 2 + 1
 ![fig](images/g3-36.png)
@@ -1013,7 +1016,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ 
     status 4 1 0
     results 2 + 1
 ![fig](images/s4.png)
@@ -1023,7 +1026,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ ステータスに6をpush,入力Tを捨てる
     status 4 1 0
     results 2 + 1
 ![fig](images/s4-84.png)
@@ -1033,7 +1036,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 
     status 6 4 1 0
     results 2 + 1
 ![fig](images/s6.png)
@@ -1043,7 +1046,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 文法g0を見て、3個Pop、{$1+$2}を結果にpush、文法名Eを入力にpush
     status 6 4 1 0
     results 2 + 1
 ![fig](images/g0-36.png)
@@ -1053,7 +1056,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 3
 ![fig](images/s0.png)
@@ -1063,7 +1066,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 3
 ![fig](images/s0-69.png)
@@ -1073,7 +1076,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 3
 ![fig](images/s1.png)
@@ -1083,7 +1086,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 3
 ![fig](images/s1-36.png)
@@ -1093,7 +1096,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 3 です
     status 1 0
     results 3
 ![fig](images/end.png)
@@ -1111,7 +1114,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 + 2 + 3 $
+    inputs 1 + 2 + 3 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -1121,7 +1124,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 + 2 + 3 $
+    inputs 1 + 2 + 3 $ ステータスに2をpush 入力1を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -1131,7 +1134,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 2 + 3 $
+    inputs + 2 + 3 $ 
     status 2 0
     results 1
 ![fig](images/s2.png)
@@ -1141,7 +1144,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 2 + 3 $
+    inputs + 2 + 3 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 1
 ![fig](images/g3-43.png)
@@ -1151,7 +1154,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 2 + 3 $
+    inputs T + 2 + 3 $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -1161,7 +1164,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 2 + 3 $
+    inputs T + 2 + 3 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 1
 ![fig](images/s0-84.png)
@@ -1171,7 +1174,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 2 + 3 $
+    inputs + 2 + 3 $ 
     status 3 0
     results 1
 ![fig](images/s3.png)
@@ -1181,7 +1184,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 2 + 3 $
+    inputs + 2 + 3 $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 1
 ![fig](images/g1-43.png)
@@ -1191,7 +1194,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 2 + 3 $
+    inputs E + 2 + 3 $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -1201,7 +1204,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 2 + 3 $
+    inputs E + 2 + 3 $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 1
 ![fig](images/s0-69.png)
@@ -1211,7 +1214,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 2 + 3 $
+    inputs + 2 + 3 $ 
     status 1 0
     results 1
 ![fig](images/s1.png)
@@ -1221,7 +1224,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 2 + 3 $
+    inputs + 2 + 3 $ ステータスに4をpush 入力+を結果に移動
     status 1 0
     results 1
 ![fig](images/s1-43.png)
@@ -1231,7 +1234,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 + 3 $
+    inputs 2 + 3 $ 
     status 4 1 0
     results + 1
 ![fig](images/s4.png)
@@ -1241,7 +1244,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 + 3 $
+    inputs 2 + 3 $ ステータスに2をpush 入力2を結果に移動
     status 4 1 0
     results + 1
 ![fig](images/s4-78.png)
@@ -1251,7 +1254,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 3 $
+    inputs + 3 $ 
     status 2 4 1 0
     results 2 + 1
 ![fig](images/s2.png)
@@ -1261,7 +1264,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 3 $
+    inputs + 3 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 4 1 0
     results 2 + 1
 ![fig](images/g3-43.png)
@@ -1271,7 +1274,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T + 3 $
+    inputs T + 3 $ 
     status 4 1 0
     results 2 + 1
 ![fig](images/s4.png)
@@ -1281,7 +1284,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T + 3 $
+    inputs T + 3 $ ステータスに6をpush,入力Tを捨てる
     status 4 1 0
     results 2 + 1
 ![fig](images/s4-84.png)
@@ -1291,7 +1294,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs + 3 $
+    inputs + 3 $ 
     status 6 4 1 0
     results 2 + 1
 ![fig](images/s6.png)
@@ -1301,7 +1304,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs + 3 $
+    inputs + 3 $ 文法g0を見て、3個Pop、{$1+$2}を結果にpush、文法名Eを入力にpush
     status 6 4 1 0
     results 2 + 1
 ![fig](images/g0-43.png)
@@ -1311,7 +1314,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 3 $
+    inputs E + 3 $ 
     status 0
     results 3
 ![fig](images/s0.png)
@@ -1321,7 +1324,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 3 $
+    inputs E + 3 $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 3
 ![fig](images/s0-69.png)
@@ -1331,7 +1334,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 3 $
+    inputs + 3 $ 
     status 1 0
     results 3
 ![fig](images/s1.png)
@@ -1341,7 +1344,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 3 $
+    inputs + 3 $ ステータスに4をpush 入力+を結果に移動
     status 1 0
     results 3
 ![fig](images/s1-43.png)
@@ -1351,7 +1354,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 3 $
+    inputs 3 $ 
     status 4 1 0
     results + 3
 ![fig](images/s4.png)
@@ -1361,7 +1364,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 3 $
+    inputs 3 $ ステータスに2をpush 入力3を結果に移動
     status 4 1 0
     results + 3
 ![fig](images/s4-78.png)
@@ -1371,7 +1374,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 
     status 2 4 1 0
     results 3 + 3
 ![fig](images/s2.png)
@@ -1381,7 +1384,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 4 1 0
     results 3 + 3
 ![fig](images/g3-36.png)
@@ -1391,7 +1394,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ 
     status 4 1 0
     results 3 + 3
 ![fig](images/s4.png)
@@ -1401,7 +1404,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ ステータスに6をpush,入力Tを捨てる
     status 4 1 0
     results 3 + 3
 ![fig](images/s4-84.png)
@@ -1411,7 +1414,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 
     status 6 4 1 0
     results 3 + 3
 ![fig](images/s6.png)
@@ -1421,7 +1424,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 文法g0を見て、3個Pop、{$1+$2}を結果にpush、文法名Eを入力にpush
     status 6 4 1 0
     results 3 + 3
 ![fig](images/g0-36.png)
@@ -1431,7 +1434,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 6
 ![fig](images/s0.png)
@@ -1441,7 +1444,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 6
 ![fig](images/s0-69.png)
@@ -1451,7 +1454,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 6
 ![fig](images/s1.png)
@@ -1461,7 +1464,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 6
 ![fig](images/s1-36.png)
@@ -1471,7 +1474,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 6 です
     status 1 0
     results 6
 ![fig](images/end.png)
@@ -1489,7 +1492,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 + 2 * 3 $
+    inputs 1 + 2 * 3 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -1499,7 +1502,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 1 + 2 * 3 $
+    inputs 1 + 2 * 3 $ ステータスに2をpush 入力1を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -1509,7 +1512,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 2 * 3 $
+    inputs + 2 * 3 $ 
     status 2 0
     results 1
 ![fig](images/s2.png)
@@ -1519,7 +1522,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs + 2 * 3 $
+    inputs + 2 * 3 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 1
 ![fig](images/g3-43.png)
@@ -1529,7 +1532,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 2 * 3 $
+    inputs T + 2 * 3 $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -1539,7 +1542,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 2 * 3 $
+    inputs T + 2 * 3 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 1
 ![fig](images/s0-84.png)
@@ -1549,7 +1552,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 2 * 3 $
+    inputs + 2 * 3 $ 
     status 3 0
     results 1
 ![fig](images/s3.png)
@@ -1559,7 +1562,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 2 * 3 $
+    inputs + 2 * 3 $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 1
 ![fig](images/g1-43.png)
@@ -1569,7 +1572,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 2 * 3 $
+    inputs E + 2 * 3 $ 
     status 0
     results 1
 ![fig](images/s0.png)
@@ -1579,7 +1582,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 2 * 3 $
+    inputs E + 2 * 3 $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 1
 ![fig](images/s0-69.png)
@@ -1589,7 +1592,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 2 * 3 $
+    inputs + 2 * 3 $ 
     status 1 0
     results 1
 ![fig](images/s1.png)
@@ -1599,7 +1602,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 2 * 3 $
+    inputs + 2 * 3 $ ステータスに4をpush 入力+を結果に移動
     status 1 0
     results 1
 ![fig](images/s1-43.png)
@@ -1609,7 +1612,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 $
+    inputs 2 * 3 $ 
     status 4 1 0
     results + 1
 ![fig](images/s4.png)
@@ -1619,7 +1622,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 $
+    inputs 2 * 3 $ ステータスに2をpush 入力2を結果に移動
     status 4 1 0
     results + 1
 ![fig](images/s4-78.png)
@@ -1629,7 +1632,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 $
+    inputs * 3 $ 
     status 2 4 1 0
     results 2 + 1
 ![fig](images/s2.png)
@@ -1639,7 +1642,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 $
+    inputs * 3 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 4 1 0
     results 2 + 1
 ![fig](images/g3-42.png)
@@ -1649,7 +1652,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T * 3 $
+    inputs T * 3 $ 
     status 4 1 0
     results 2 + 1
 ![fig](images/s4.png)
@@ -1659,7 +1662,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T * 3 $
+    inputs T * 3 $ ステータスに6をpush,入力Tを捨てる
     status 4 1 0
     results 2 + 1
 ![fig](images/s4-84.png)
@@ -1669,7 +1672,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 $
+    inputs * 3 $ 
     status 6 4 1 0
     results 2 + 1
 ![fig](images/s6.png)
@@ -1679,7 +1682,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 $
+    inputs * 3 $ ステータスに5をpush 入力*を結果に移動
     status 6 4 1 0
     results 2 + 1
 ![fig](images/s6-42.png)
@@ -1689,7 +1692,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 $
+    inputs 3 $ 
     status 5 6 4 1 0
     results * 2 + 1
 ![fig](images/s5.png)
@@ -1699,7 +1702,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 $
+    inputs 3 $ ステータスに7をpush 入力3を結果に移動
     status 5 6 4 1 0
     results * 2 + 1
 ![fig](images/s5-78.png)
@@ -1709,7 +1712,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs $
+    inputs $ 
     status 7 5 6 4 1 0
     results 3 * 2 + 1
 ![fig](images/s7.png)
@@ -1719,7 +1722,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs $
+    inputs $ 文法g2を見て、3個Pop、{$1*$2}を結果にpush、文法名Tを入力にpush
     status 7 5 6 4 1 0
     results 3 * 2 + 1
 ![fig](images/g2-36.png)
@@ -1729,7 +1732,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ 
     status 4 1 0
     results 6 + 1
 ![fig](images/s4.png)
@@ -1739,7 +1742,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ ステータスに6をpush,入力Tを捨てる
     status 4 1 0
     results 6 + 1
 ![fig](images/s4-84.png)
@@ -1749,7 +1752,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 
     status 6 4 1 0
     results 6 + 1
 ![fig](images/s6.png)
@@ -1759,7 +1762,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 文法g0を見て、3個Pop、{$1+$2}を結果にpush、文法名Eを入力にpush
     status 6 4 1 0
     results 6 + 1
 ![fig](images/g0-36.png)
@@ -1769,7 +1772,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 7
 ![fig](images/s0.png)
@@ -1779,7 +1782,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 7
 ![fig](images/s0-69.png)
@@ -1789,7 +1792,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 7
 ![fig](images/s1.png)
@@ -1799,7 +1802,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 7
 ![fig](images/s1-36.png)
@@ -1809,7 +1812,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 7 です
     status 1 0
     results 7
 ![fig](images/end.png)
@@ -1827,7 +1830,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 + 4 $
+    inputs 2 * 3 + 4 $ 
     status 0
     results 
 ![fig](images/s0.png)
@@ -1837,7 +1840,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 2 * 3 + 4 $
+    inputs 2 * 3 + 4 $ ステータスに2をpush 入力2を結果に移動
     status 0
     results 
 ![fig](images/s0-78.png)
@@ -1847,7 +1850,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 + 4 $
+    inputs * 3 + 4 $ 
     status 2 0
     results 2
 ![fig](images/s2.png)
@@ -1857,7 +1860,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs * 3 + 4 $
+    inputs * 3 + 4 $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 0
     results 2
 ![fig](images/g3-42.png)
@@ -1867,7 +1870,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 3 + 4 $
+    inputs T * 3 + 4 $ 
     status 0
     results 2
 ![fig](images/s0.png)
@@ -1877,7 +1880,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T * 3 + 4 $
+    inputs T * 3 + 4 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 2
 ![fig](images/s0-84.png)
@@ -1887,7 +1890,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 + 4 $
+    inputs * 3 + 4 $ 
     status 3 0
     results 2
 ![fig](images/s3.png)
@@ -1897,7 +1900,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s5
 
-    inputs * 3 + 4 $
+    inputs * 3 + 4 $ ステータスに5をpush 入力*を結果に移動
     status 3 0
     results 2
 ![fig](images/s3-42.png)
@@ -1907,7 +1910,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 + 4 $
+    inputs 3 + 4 $ 
     status 5 3 0
     results * 2
 ![fig](images/s5.png)
@@ -1917,7 +1920,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s7
 
-    inputs 3 + 4 $
+    inputs 3 + 4 $ ステータスに7をpush 入力3を結果に移動
     status 5 3 0
     results * 2
 ![fig](images/s5-78.png)
@@ -1927,7 +1930,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs + 4 $
+    inputs + 4 $ 
     status 7 5 3 0
     results 3 * 2
 ![fig](images/s7.png)
@@ -1937,7 +1940,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g2
 
-    inputs + 4 $
+    inputs + 4 $ 文法g2を見て、3個Pop、{$1*$2}を結果にpush、文法名Tを入力にpush
     status 7 5 3 0
     results 3 * 2
 ![fig](images/g2-43.png)
@@ -1947,7 +1950,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 4 $
+    inputs T + 4 $ 
     status 0
     results 6
 ![fig](images/s0.png)
@@ -1957,7 +1960,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s3
 
-    inputs T + 4 $
+    inputs T + 4 $ ステータスに3をpush,入力Tを捨てる
     status 0
     results 6
 ![fig](images/s0-84.png)
@@ -1967,7 +1970,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 4 $
+    inputs + 4 $ 
     status 3 0
     results 6
 ![fig](images/s3.png)
@@ -1977,7 +1980,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g1
 
-    inputs + 4 $
+    inputs + 4 $ 文法g1を見て、1個Pop、{$1}を結果にpush、文法名Eを入力にpush
     status 3 0
     results 6
 ![fig](images/g1-43.png)
@@ -1987,7 +1990,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 4 $
+    inputs E + 4 $ 
     status 0
     results 6
 ![fig](images/s0.png)
@@ -1997,7 +2000,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E + 4 $
+    inputs E + 4 $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 6
 ![fig](images/s0-69.png)
@@ -2007,7 +2010,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 4 $
+    inputs + 4 $ 
     status 1 0
     results 6
 ![fig](images/s1.png)
@@ -2017,7 +2020,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s4
 
-    inputs + 4 $
+    inputs + 4 $ ステータスに4をpush 入力+を結果に移動
     status 1 0
     results 6
 ![fig](images/s1-43.png)
@@ -2027,7 +2030,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 4 $
+    inputs 4 $ 
     status 4 1 0
     results + 6
 ![fig](images/s4.png)
@@ -2037,7 +2040,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Shift s2
 
-    inputs 4 $
+    inputs 4 $ ステータスに2をpush 入力4を結果に移動
     status 4 1 0
     results + 6
 ![fig](images/s4-78.png)
@@ -2047,7 +2050,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 
     status 2 4 1 0
     results 4 + 6
 ![fig](images/s2.png)
@@ -2057,7 +2060,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g3
 
-    inputs $
+    inputs $ 文法g3を見て、1個Pop、{$1}を結果にpush、文法名Tを入力にpush
     status 2 4 1 0
     results 4 + 6
 ![fig](images/g3-36.png)
@@ -2067,7 +2070,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ 
     status 4 1 0
     results 4 + 6
 ![fig](images/s4.png)
@@ -2077,7 +2080,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s6
 
-    inputs T $
+    inputs T $ ステータスに6をpush,入力Tを捨てる
     status 4 1 0
     results 4 + 6
 ![fig](images/s4-84.png)
@@ -2087,7 +2090,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 
     status 6 4 1 0
     results 4 + 6
 ![fig](images/s6.png)
@@ -2097,7 +2100,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Reduce g0
 
-    inputs $
+    inputs $ 文法g0を見て、3個Pop、{$1+$2}を結果にpush、文法名Eを入力にpush
     status 6 4 1 0
     results 4 + 6
 ![fig](images/g0-36.png)
@@ -2107,7 +2110,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ 
     status 0
     results 10
 ![fig](images/s0.png)
@@ -2117,7 +2120,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Goto s1
 
-    inputs E $
+    inputs E $ ステータスに1をpush,入力Eを捨てる
     status 0
     results 10
 ![fig](images/s0-69.png)
@@ -2127,7 +2130,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 
     status 1 0
     results 10
 ![fig](images/s1.png)
@@ -2137,7 +2140,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ アクセプト
     status 1 0
     results 10
 ![fig](images/s1-36.png)
@@ -2147,7 +2150,7 @@ LR構文解析の動きをログを元に見てみます。
 
 ## Accept
 
-    inputs $
+    inputs $ 結果 10 です
     status 1 0
     results 10
 ![fig](images/end.png)
@@ -2159,12 +2162,20 @@ LR構文解析の動きをログを元に見てみます。
 
 ---
 
+- いくつかの例でパーサの動きを見てみました。
+- よく分かってない方でもLR構文解析の動きが分かりましたでしょうか？
+
+---
+
 ### 4. LR構文解析とは
 
 - 構文解析を複数の状態に分け、そこでの入力によって次の状態に変化させていって構文解析するのがLR構文解析です。
 - 状態を戻す場合には呼び出し経路を記憶しておく必要があるのでスタックが必要になります。
 - 呼び出し経路を保存しておくスタックを状態スタックといい、結果を保存するスタックを結果スタックといいます。
+- 通常LR構文解析器はYaccといったようなコンパイラコンパイラにより自動生成されるので動きを理解せずに使っている方も多いでしょう。
+- しかしながら、LR構文解析の動作を理解すればよりパーサを制作するのに役立つかも知れません。
 
 ---
 
-おしまい
+ご清聴ありがとうございました
+

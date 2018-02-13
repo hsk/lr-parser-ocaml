@@ -33,7 +33,6 @@ let _ =
     Printf.printf "%s[label=\"%s %s\"];\n" i i (List.assoc i gotos)
   ) table;
   Printf.printf "end[label=\"end $\"];\n";
-
   Array.iteri(fun i m ->
     List.iter(function
     | (v,Accept) -> Printf.printf "s%d->end[label=\"%s\nAccept\"];\n" i v
@@ -42,6 +41,5 @@ let _ =
     | (v,Reduce j) -> Printf.printf "s%d->g%d[label=\"%s\nReduce\"];\n" i j v      
     ) m
   ) table;
-
   Printf.printf "}\n";
   ()
