@@ -17,8 +17,7 @@ let table = [|
 (*4*)["N",Shift 2;                                                "T",Goto 6];
 (*5*)["N",Shift 7                                                           ];
 (*6*)[           "+",Reduce 0;"*",Shift  5;"$",Reduce 0                     ];
-(*7*)[           "+",Reduce 2;"*",Reduce 2;"$",Reduce 2                     ];
-|]
+(*7*)[           "+",Reduce 2;"*",Reduce 2;"$",Reduce 2                     ]|]
 let rec lexer = function "" -> ["$",E] | i ->
   let rule,_,f = List.find(fun(_,p,f)->
     Str.string_match(Str.regexp p) i 0
@@ -26,12 +25,9 @@ let rec lexer = function "" -> ["$",E] | i ->
   match Str.string_after i (Str.match_end()),rule with
   n,"ws" -> lexer n | n,_ -> (rule,f (Str.matched_string i))::lexer n
 
-let rec pop = function
-  | 0,acc,s->acc,s
-  | n,acc,a::s -> pop (n-1,a::acc,s)
+let rec pop = function 0,acc,s->acc,s | n,acc,a::s -> pop (n-1,a::acc,s)
 let rec parser((t,v)::ts,s::ss,rs) =
-  dispatch(List.assoc t table.(s),(t,v)::ts,s::ss,rs)
-and dispatch = function
+  match(List.assoc t table.(s),(t,v)::ts,s::ss,rs)with
   | Accept  ,        _, ss,r::_ -> r
   | Shift  s,(_,v)::ts, ss,rs   -> parser(ts,s::ss,v::rs)
   | Goto   s,(_,_)::ts, ss,rs   -> parser(ts,s::ss,   rs)

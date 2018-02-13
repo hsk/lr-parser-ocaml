@@ -65,8 +65,7 @@ let table = [|
 (*4*)["N",Shift 2;                                                "T",Goto 6];
 (*5*)["N",Shift 7                                                           ];
 (*6*)[           "+",Reduce 0;"*",Shift  5;"$",Reduce 0                     ];
-(*7*)[           "+",Reduce 2;"*",Reduce 2;"$",Reduce 2                     ];
-|]
+(*7*)[           "+",Reduce 2;"*",Reduce 2;"$",Reduce 2                     ]|]
 ```
 
 - LR構文解析には構文解析表が別途必要になります。
@@ -193,7 +192,6 @@ let _ = assert(parse"1+2"=I 3); assert(parse"1+2*3"=I 7);
 LR構文解析の動きをログを元に見てみます。
 
 ---
-
 
 # 1
 
